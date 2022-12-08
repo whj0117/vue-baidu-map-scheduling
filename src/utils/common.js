@@ -3,12 +3,13 @@
  * @Author: wanghongjian
  * @github: https://github.com/whj0117
  * @Date: 2022-12-07 11:16:11
- * @LastEditTime: 2022-12-07 17:09:36
+ * @LastEditTime: 2022-12-08 14:01:17
  * @LastEditors:  
  */
 export const TRAINNOLIST = () => [{
     etdoNo: 'T202212071400',
     children: [{
+        etdoNo: 'T202212071400',
         ettaNo: 'Y202212071400',
         fromAddress: '东直门地铁站',//发货地址
         toAddress: '东直门地铁站',//收货地址
@@ -16,6 +17,7 @@ export const TRAINNOLIST = () => [{
         s: { lng: 116.43, lat: 39.94 },
         ettaType: 'TRUNK'
     }, {
+        etdoNo: 'T202212071400',
         ettaNo: 'Y202212071500',
         fromAddress: '西直门地铁站',//发货地址
         toAddress: '西直门地铁站',//收货地址
@@ -25,6 +27,7 @@ export const TRAINNOLIST = () => [{
 }, {
     etdoNo: 'T202212071500',
     children: [{
+        etdoNo: 'T202212071500',
         ettaNo: 'Y202212071600',
         fromAddress: '北京西站地铁站',//发货地址
         toAddress: '北京西站地铁站',//收货地址
@@ -34,7 +37,7 @@ export const TRAINNOLIST = () => [{
 }]
 
 export const MARKERPOINT = () => [{
-    etdoNo: '',
+    etdoNo: 'T202212071400',
     ettaNo: 'Y202212071400',
     fromAddress: '东直门地铁站',//发货地址
     toAddress: '东直门地铁站',//收货地址
@@ -42,14 +45,14 @@ export const MARKERPOINT = () => [{
     s: { lng: 116.43, lat: 39.94 },
     ettaType: 'TRUNK',
 }, {
-    etdoNo: '',
+    etdoNo: 'T202212071400',
     ettaNo: 'Y202212071500',
     fromAddress: '西直门地铁站',//发货地址
     toAddress: '西直门地铁站',//收货地址
     p: { lng: 116.36, lat: 39.94 },
     s: { lng: 116.36, lat: 39.94 },
 }, {
-    etdoNo: '',
+    etdoNo: 'T202212071500',
     ettaNo: 'Y202212071600',
     fromAddress: '北京西站地铁站',//发货地址
     toAddress: '北京西站地铁站',//收货地址

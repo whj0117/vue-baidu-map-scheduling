@@ -3,7 +3,7 @@
  * @Author: wanghongjian
  * @github: https://github.com/whj0117
  * @Date: 2022-12-07 11:14:55
- * @LastEditTime: 2022-12-07 17:08:08
+ * @LastEditTime: 2022-12-08 14:53:13
  * @LastEditors:  
 -->
 <template>
@@ -23,7 +23,7 @@
                 :key="item.etdoNo"
               >
                 <template slot="title">
-                  <image
+                  <img
                     v-if="
                       markerIcon.find(
                         (type) =>
@@ -32,7 +32,7 @@
                       )
                     "
                     :src="
-                      'image/mapDispatch/' +
+                      'images/' +
                       markerIcon.find(
                         (type) =>
                           type.etdoNoList &&
@@ -50,6 +50,7 @@
                     :key="i"
                     @click="handleClick(t)"
                   >
+                    <i class="el-icon-tickets"></i>
                     {{ t.ettaNo }}
                   </el-menu-item>
                 </el-menu-item-group>
@@ -162,7 +163,12 @@
               <bm-context-menu-item
                 v-if="!item.etdoNo"
                 :callback="() => addTask([item])"
-                text="添加运输任务"
+                text="创建新车次并添加运输任务"
+              ></bm-context-menu-item>
+              <bm-context-menu-item
+                v-if="!item.etdoNo"
+                :callback="() => openChooseCar([item])"
+                text="选择已有车次"
               ></bm-context-menu-item>
               <bm-context-menu-item
                 v-else
@@ -191,7 +197,12 @@
               <bm-context-menu-item
                 v-if="!item.etdoNo"
                 :callback="() => addTask([item])"
-                text="添加运输任务"
+                text="创建新车次并添加运输任务"
+              ></bm-context-menu-item>
+              <bm-context-menu-item
+                v-if="!item.etdoNo"
+                :callback="() => openChooseCar([item])"
+                text="选择已有车次"
               ></bm-context-menu-item>
               <bm-context-menu-item
                 v-else
@@ -208,11 +219,13 @@
         </div>
       </baidu-map>
     </div>
+    <chooseCar ref="chooseCar" />
   </div>
 </template>
 
 <script>
-import { TRAINNOLIST, MARKERPOINT, CARICON,RESETPATHS } from "../utils/common";
+import { TRAINNOLIST, MARKERPOINT, CARICON, RESETPATHS } from "../utils/common";
+import chooseCar from "../components/chooseCar.vue";
 export default {
   name: "HelloWorld",
   props: {
@@ -221,9 +234,10 @@ export default {
       default: () => {},
     },
   },
+  components: { chooseCar },
   data() {
     return {
-      BMap:null,
+      BMap: null,
       activeName: "first",
       trainNoList: TRAINNOLIST(),
       markerPoint: MARKERPOINT(),
@@ -235,8 +249,9 @@ export default {
       editing: false,
       guideMarkerBool: false,
       guideLineBool: false,
-      guideLineList:[],
+      guideLineList: [],
       pathsConfig: RESETPATHS(),
+      polylineList: [],
     };
   },
   methods: {
@@ -244,233 +259,247 @@ export default {
     init({ BMap, map }) {
       this.BMap = BMap;
       // this.markerPoint = MARKERPOINT;
-      // this.getData()
+      this.getTrainMarker();
+    },
+    // 打开选择车次dialog
+    openChooseCar() {
+      this.$refs["chooseCar"].carDialogVisible = true;
     },
     handleOpen() {},
     handleClose() {},
+    // 获取车次显示图标
+    getTrainMarker() {
+      // this.markerIcon = resetMarkerIcon()
+      const { trainNoList, markerIcon } = this;
+      trainNoList.forEach(({ etdoNo }, i) => {
+        try {
+          var find = markerIcon.find(
+            (type) => type.etdoNoList && type.etdoNoList.includes(etdoNo)
+          );
+          if (!find) {
+            var maxList = markerIcon.map((item, index) => {
+              return {
+                len: !item.etdoNoList ? 0 : item.etdoNoList.length,
+                index,
+              };
+            });
+            var maxObj = maxList.find(
+              (type) =>
+                type.len ==
+                Math.min.apply(
+                  Math,
+                  maxList.map((ele) => {
+                    return ele.len;
+                  })
+                )
+            );
+            if (!this.markerIcon[maxObj.index].etdoNoList)
+              this.$set(this.markerIcon[maxObj.index], "etdoNoList", []);
+            this.markerIcon[maxObj.index].etdoNoList.push(etdoNo);
+            console.log(this.markerIcon);
+            throw new Error();
+          }
+        } catch (err) {}
+      });
+    },
+    trainNoData({ handle, etdoNo, pro = [] }) {
+      try {
+        if (handle == "add") {
+          let findIndex = this.trainNoList.find(
+            (type) => type.etdoNo == etdoNo
+          );
+          if (findIndex > -1) {
+            this.trainNoList[findIndex].children = [
+              ...this.trainNoList[findIndex].children,
+              ...pro,
+            ];
+          } else {
+            this.trainNoList.push({
+              etdoNo,
+              children: [pro],
+            });
+          }
+        } else {
+          console.log(pro);
+        }
+      } catch (err) {}
+      this.getTrainMarker();
+    },
+    saveLineConfig() {},
     // 添加运输任务
-		addTask(pro) {
-			const { polylineList, tableIndex, trainNoList } = this
-			var that = this
-			var params = []
-			pro.forEach(({ettaId,equallyLngLat})=>{
-				params.push({
-					name: 'ettaIds',
-					value: ettaId
-				})
-				equallyLngLat.forEach(i=>{
-					params.push({
-						name: 'ettaIds',
-						value: i
-					})
-				})
-			})
-			const { currentCar, activeEtdoNo } = this
-			if (currentCar || activeEtdoNo) {
-				params.push({
-					name: 'etdoNo',
-					value: currentCar || activeEtdoNo
-				})
-			}
-			const { etdoNo } = data
-						that.trainNoData()
-						pro.forEach(item => {
-							try {
-								that.markerPoint.forEach(m => {
-									if (item.ettaNo == m.ettaNo) {
-										item.etdoNo = etdoNo
-										m.etdoNo = etdoNo
-										throw new Error()
-									}
-								})
-							} catch (err) {
-
-							}
-						})
-						if (pro.length > 1) {
-							// 批量添加
-							try {
-								// 判断批量添加之前，该车次是否已存在订单
-								polylineList.forEach(item => {
-									if (item.etdoNo == etdoNo) {
-										// 已有订单并且存在polylineList里面加入该车
-										item.path = [...item.path, ...pro.map(item => item.p)]
-										item.tableData = [...item.tableData, ...pro]
-										item.waypoints = that.getWayPoints(item.path)
-										that.deletePolyLine({ isMessage: false })//合并到一辆车，删除当前线
-										that.saveLineConfig(item)
-										throw new Error()
-									}
-								})
-								var find = trainNoList.find(type => type.etdoNo == etdoNo)
-								if (find) {
-									var diff = find.children.filter(x => !polylineList[tableIndex].tableData.some(y => y.ettaNo == x.ettaNo))
-									if (diff.length) {
-										const { path, tableData } = polylineList[tableIndex]
-										polylineList[tableIndex].path = [...diff.map(d => d.p), ...path]
-										polylineList[tableIndex].tableData = [...diff, ...tableData]
-										polylineList[tableIndex].waypoints = that.getWayPoints(polylineList[tableIndex].path)
-									}
-								}
-								that.$set(polylineList[tableIndex], 'etdoNo', etdoNo)
-								that.saveLineConfig()
-							} catch (err) {
-
-							}
-							that.carDialogVisible = false
-						} else {
-							// 右键单个添加
-							polylineList.forEach(item => {
-								if (item.etdoNo == etdoNo) {
-									item.path.push(pro[0].p)
-									item.tableData.push({
-										etdoNo,
-										ettaId: pro[0].ettaId,
-										ettaNo: pro[0].ettaNo,
-										ettaType: pro[0].ettaType,
-										p: pro[0].p,
-										ettaSoNo: pro[0].ettaSoNo,
-										ettaToEbrgAddress: pro[0].ettaToEbrgAddress
-									})
-									item.waypoints = that.getWayPoints(item.path)
-									that.saveLineConfig(item)
-								}
-							})
-						}
-						that.$message({
-							message: '添加运输任务成功',
-							type: 'success'
-						});
-		},
-		// 移除运输任务
-		removeTask(pro) {
-			var that = this
-			const { polylineList, tableIndex } = this
-			// var params = pro.map(item => {
-			// 	return {
-			// 		name: 'ettaIds',
-			// 		value: item.ettaId
-			// 	}
-			// })
-			var params = []
-			pro.forEach(({ettaId,equallyLngLat})=>{
-				params.push({
-					name: 'ettaIds',
-					value: ettaId
-				})
-				equallyLngLat.forEach(i=>{
-					params.push({
-						name: 'ettaIds',
-						value: i
-					})
-				})
-			})
-			params.push({
-				name: 'ettaDoNo',
-				value: pro[0].etdoNo
-			})
-			$.sns.ajax({
-				url: $.sns.modulePath + '/plan/etDeliveryLoadingConsoleEditor/removeTaskFromDispatch.shtml',
-				data: params,
-				type: 'POST',
-				success: function (result) {
-					const { code, data: { success, messagesAsString } } = result
-					if (code == 0 && success) {
-						that.$notify.closeAll()
-						that.$message({
-							message: '运输任务移除成功',
-							type: 'success'
-						});
-						that.trainNoData()
-						pro.forEach(item => {
-							try {
-								that.markerPoint.forEach(m => {
-									if (item.ettaNo == m.ettaNo) {
-										item.etdoNo = null
-										m.etdoNo = null
-										if (!m.isEditIcon && m.icon == 'blue') m.icon = 'red' //说明原本是蓝色，没有修改过marker样式
-										// m.icon = 'red'
-										throw new Error()
-									}
-								})
-							} catch (err) {
-
-							}
-						})
-						if (pro.length > 1) {
-							// 批量移除
-							polylineList[tableIndex].etdoNo = null
-							that.saveLineConfig()
-							// that.drawer = false
-						} else if (pro.length == 1) {
-							if (polylineList[tableIndex]) {
-								// 弹窗表格移除
-								pro.isAn = false
-								var findIndex = polylineList[tableIndex].path.findIndex(type => type.lng == pro[0].p.lng && type.lat == pro[0].p.lat)
-								var driveBool = polylineList[tableIndex].driveBool
-								polylineList[tableIndex].path.splice(findIndex, 1)
-								polylineList[tableIndex].tableData.splice(findIndex, 1)
-								console.log("表格删除", that.getWayPoints(polylineList[tableIndex].path))
-								polylineList[tableIndex].waypoints = that.getWayPoints(polylineList[tableIndex].path)
-								if (driveBool) polylineList[tableIndex].driveBool = false
-								that.$nextTick(() => {
-									if (driveBool) polylineList[tableIndex].driveBool = true
-									that.saveLineConfig()
-									if (!polylineList[tableIndex].path.length) that.drawer = false
-								})
-							} else {
-								// 标点右键移除
-								try {
-									polylineList.forEach(item => {
-										const { path } = item
-										path.forEach((p, i) => {
-											if (p.lng == pro[0].p.lng && p.lat == pro[0].p.lat) {
-												var driveBool = item.driveBool
-												if (driveBool) item.driveBool = false
-												path.splice(i, 1)
-												item.tableData.splice(i, 1)
-												item.waypoints = that.getWayPoints(path)
-												that.$nextTick(() => {
-													if (path.length <= 1) {
-														that.deletePolyLine({ etfdId: item.etfdId, isMessage: false })
-													} else {
-														if (driveBool) item.driveBool = true
-														that.saveLineConfig(item)
-													}
-												})
-												throw new Error()
-											}
-										})
-									})
-								} catch (err) {
-
-								}
-								console.log(polylineList)
-							}
-						}
-					} else {
-						that.$message.error(messagesAsString)
-						return false
-					}
-				},
-				fail: function (result) {
-					$.sns.alert("buildTree fail");
-				}
-			});
-		},
+    addTask(pro) {
+      const { polylineList, tableIndex, trainNoList } = this;
+      const { currentCar } = this;
+      const etdoNo = currentCar || "T" + Date.now();
+      this.trainNoData({ handle: "add", etdoNo, pro });
+      pro.forEach((item) => {
+        try {
+          this.markerPoint.forEach((m) => {
+            if (item.ettaNo == m.ettaNo) {
+              item.etdoNo = etdoNo;
+              m.etdoNo = etdoNo;
+              throw new Error();
+            }
+          });
+        } catch (err) {}
+      });
+      if (pro.length > 1) {
+        // 批量添加
+        try {
+          // 判断批量添加之前，该车次是否已存在订单
+          polylineList.forEach((item) => {
+            if (item.etdoNo == etdoNo) {
+              // 已有订单并且存在polylineList里面加入该车
+              item.path = [...item.path, ...pro.map((item) => item.p)];
+              item.tableData = [...item.tableData, ...pro];
+              item.waypoints = that.getWayPoints(item.path);
+              that.deletePolyLine({ isMessage: false }); //合并到一辆车，删除当前线
+              that.saveLineConfig(item);
+              throw new Error();
+            }
+          });
+          var find = trainNoList.find((type) => type.etdoNo == etdoNo);
+          if (find) {
+            var diff = find.children.filter(
+              (x) =>
+                !polylineList[tableIndex].tableData.some(
+                  (y) => y.ettaNo == x.ettaNo
+                )
+            );
+            if (diff.length) {
+              const { path, tableData } = polylineList[tableIndex];
+              polylineList[tableIndex].path = [
+                ...diff.map((d) => d.p),
+                ...path,
+              ];
+              polylineList[tableIndex].tableData = [...diff, ...tableData];
+              polylineList[tableIndex].waypoints = that.getWayPoints(
+                polylineList[tableIndex].path
+              );
+            }
+          }
+          this.$set(polylineList[tableIndex], "etdoNo", etdoNo);
+          this.saveLineConfig();
+        } catch (err) {}
+        this.carDialogVisible = false;
+      } else {
+        // 右键单个添加
+        polylineList.forEach((item) => {
+          if (item.etdoNo == etdoNo) {
+            item.path.push(pro[0].p);
+            item.tableData.push({
+              etdoNo,
+              ettaId: pro[0].ettaId,
+              ettaNo: pro[0].ettaNo,
+              ettaType: pro[0].ettaType,
+              p: pro[0].p,
+              ettaSoNo: pro[0].ettaSoNo,
+              ettaToEbrgAddress: pro[0].ettaToEbrgAddress,
+            });
+            item.waypoints = that.getWayPoints(item.path);
+            this.saveLineConfig(item);
+          }
+        });
+      }
+      this.$message({
+        message: "添加运输任务成功",
+        type: "success",
+      });
+    },
+    // 移除运输任务
+    removeTask(pro) {
+      const { polylineList, tableIndex } = this;
+      this.$notify.closeAll();
+      this.$message({
+        message: "运输任务移除成功",
+        type: "success",
+      });
+      this.trainNoData({ handle: "remove", pro });
+      pro.forEach((item) => {
+        try {
+          this.markerPoint.forEach((m) => {
+            if (item.ettaNo == m.ettaNo) {
+              item.etdoNo = null;
+              m.etdoNo = null;
+              if (!m.isEditIcon && m.icon == "blue") m.icon = "red"; //说明原本是蓝色，没有修改过marker样式
+              // m.icon = 'red'
+              throw new Error();
+            }
+          });
+        } catch (err) {}
+      });
+      if (pro.length > 1) {
+        // 批量移除
+        polylineList[tableIndex].etdoNo = null;
+        this.saveLineConfig();
+        // that.drawer = false
+      } else if (pro.length == 1) {
+        if (polylineList[tableIndex]) {
+          // 弹窗表格移除
+          pro.isAn = false;
+          var findIndex = polylineList[tableIndex].path.findIndex(
+            (type) => type.lng == pro[0].p.lng && type.lat == pro[0].p.lat
+          );
+          var driveBool = polylineList[tableIndex].driveBool;
+          polylineList[tableIndex].path.splice(findIndex, 1);
+          polylineList[tableIndex].tableData.splice(findIndex, 1);
+          console.log(
+            "表格删除",
+            this.getWayPoints(polylineList[tableIndex].path)
+          );
+          polylineList[tableIndex].waypoints = this.getWayPoints(
+            polylineList[tableIndex].path
+          );
+          if (driveBool) polylineList[tableIndex].driveBool = false;
+          this.$nextTick(() => {
+            if (driveBool) polylineList[tableIndex].driveBool = true;
+            this.saveLineConfig();
+            if (!polylineList[tableIndex].path.length) this.drawer = false;
+          });
+        } else {
+          // 标点右键移除
+          try {
+            polylineList.forEach((item) => {
+              const { path } = item;
+              path.forEach((p, i) => {
+                if (p.lng == pro[0].p.lng && p.lat == pro[0].p.lat) {
+                  var driveBool = item.driveBool;
+                  if (driveBool) item.driveBool = false;
+                  path.splice(i, 1);
+                  item.tableData.splice(i, 1);
+                  item.waypoints = this.getWayPoints(path);
+                  this.$nextTick(() => {
+                    if (path.length <= 1) {
+                      this.deletePolyLine({
+                        etfdId: item.etfdId,
+                        isMessage: false,
+                      });
+                    } else {
+                      if (driveBool) item.driveBool = true;
+                      this.saveLineConfig(item);
+                    }
+                  });
+                  throw new Error();
+                }
+              });
+            });
+          } catch (err) {}
+        }
+      }
+    },
     // 点击左侧运输单
-		handleClick({ p, ettaNo }) {
-			const { markerPoint } = this
-			this.center = p
-			this.zoom = 15
-			var find = markerPoint.find(type => type.ettaNo == ettaNo)
-			if (find) {
-        this.$set(find,'isAn',true)
-				setTimeout(() => {
-					find.isAn = false
-				}, 40)
-			}
-		},
+    handleClick({ p, ettaNo }) {
+      const { markerPoint } = this;
+      this.center = p;
+      this.zoom = 15;
+      var find = markerPoint.find((type) => type.ettaNo == ettaNo);
+      if (find) {
+        this.$set(find, "isAn", true);
+        setTimeout(() => {
+          find.isAn = false;
+        }, 40);
+      }
+    },
     // 点搜索按照条件有，客户订单号，客户地址，客户姓名，客户手机号
     filterMethod(val) {
       const { markerPoint } = this;
@@ -483,7 +512,7 @@ export default {
             ettaToContactMobile,
             ettaConsigneeEbspNameCn,
           } = item;
-          if (                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
+          if (
             !!~ettaSoNo.toUpperCase().indexOf(val.toUpperCase()) ||
             !!~ettaToEbrgAddress.indexOf(val) ||
             !!~ettaToContactMobile.indexOf(val) ||
@@ -518,42 +547,57 @@ export default {
       this.editing = !this.editing;
       if (!this.editing) this.pathsConfig = RESETPATHS();
     },
-    	// 点击marker
-		clickMarker(item) {
-			if (this.editing) {
-				const { icon, ettaNo, etdoNo, ettaType, ettaId, ettaSoNo, ettaToEbrgAddress,equallyLngLat } = item
-				if (etdoNo) {
-					this.$message.error('该订单已有车次，不能重复加入')
-					return false
-				}
-				const { pathsConfig: { tableData, path } } = this
-				var p = ettaType == 'TRUNK' ? { ...item.s } : { ...item.p }
-				var iconList = icon.split('&')
-				if (iconList.length > 1) {
-					item.icon = iconList[0]
-					var splicePathIndex = path.splice(type => type.lng == p.lng && type.lat == p.lat)
-					var spliceTableIndex = tableData.findIndex(type => type.ettaNo == ettaNo)
-					path.splice(splicePathIndex, 1)
-					tableData.splice(spliceTableIndex, 1)
-				} else {
-					item.icon += '&green'
-					path.push(p)
-					tableData.push({
-						p,
-						etdoNo,
-						ettaId,
-						ettaNo,
-						ettaType,
-						ettaSoNo,
-						ettaToEbrgAddress,
-						equallyLngLat
-						// ettaToContactMobile
-					})
-				}
-			} else {
-				this.getGoodsInfo(item.ettaNo)
-			}
-		},
+    // 点击marker
+    clickMarker(item) {
+      if (this.editing) {
+        const {
+          icon,
+          ettaNo,
+          etdoNo,
+          ettaType,
+          ettaId,
+          ettaSoNo,
+          ettaToEbrgAddress,
+          equallyLngLat,
+        } = item;
+        if (etdoNo) {
+          this.$message.error("该订单已有车次，不能重复加入");
+          return false;
+        }
+        const {
+          pathsConfig: { tableData, path },
+        } = this;
+        var p = ettaType == "TRUNK" ? { ...item.s } : { ...item.p };
+        var iconList = icon.split("&");
+        if (iconList.length > 1) {
+          item.icon = iconList[0];
+          var splicePathIndex = path.splice(
+            (type) => type.lng == p.lng && type.lat == p.lat
+          );
+          var spliceTableIndex = tableData.findIndex(
+            (type) => type.ettaNo == ettaNo
+          );
+          path.splice(splicePathIndex, 1);
+          tableData.splice(spliceTableIndex, 1);
+        } else {
+          item.icon += "&green";
+          path.push(p);
+          tableData.push({
+            p,
+            etdoNo,
+            ettaId,
+            ettaNo,
+            ettaType,
+            ettaSoNo,
+            ettaToEbrgAddress,
+            equallyLngLat,
+            // ettaToContactMobile
+          });
+        }
+      } else {
+        this.getGoodsInfo(item.ettaNo);
+      }
+    },
     // 根据点生成线
     getPolyLine() {
       this.markerPoint.forEach((item) => {
@@ -686,27 +730,30 @@ export default {
     getPolyLineDetail() {
       this.detailVisible = true;
     },
-    	// 获取marker图标大小和颜色
-		getMarkerIcon({ icon = 'red', size = 'small', etdoNo = null }) {
-			var iconList = icon.split('&')
-			var len = iconList[iconList.length - 1]
-			var find = this.markerIcon.find(type => type.etdoNoList && type.etdoNoList.includes(etdoNo))
-			if (etdoNo && find) {
-				var icon = find.icon
-				return `images/${icon}_car.png`
-			}
-			return `images/${size}_${len}.png`
-		},
-    	// 根据图标大小不同渲染不同大小marker
-		getMarkerSize(size = 'small', etdoNo) {
-			var findIndex = this.trainNoList.findIndex(type => type.etdoNo == etdoNo) > -1 //判断是否为当天的车
-			if (findIndex) {
-				return { width: 28, height: 19 }
-			} else if (size === 'big') {
-				return { width: 25, height: 35 }
-			}
-			return { width: 19, height: 27 }
-		},
+    // 获取marker图标大小和颜色
+    getMarkerIcon({ icon = "red", size = "small", etdoNo = null }) {
+      var iconList = icon.split("&");
+      var len = iconList[iconList.length - 1];
+      var find = this.markerIcon.find(
+        (type) => type.etdoNoList && type.etdoNoList.includes(etdoNo)
+      );
+      if (etdoNo && find) {
+        var icon = find.icon;
+        return `images/${icon}_car.png`;
+      }
+      return `images/${size}_${len}.png`;
+    },
+    // 根据图标大小不同渲染不同大小marker
+    getMarkerSize(size = "small", etdoNo) {
+      var findIndex =
+        this.trainNoList.findIndex((type) => type.etdoNo == etdoNo) > -1; //判断是否为当天的车
+      if (findIndex) {
+        return { width: 28, height: 19 };
+      } else if (size === "big") {
+        return { width: 25, height: 35 };
+      }
+      return { width: 19, height: 27 };
+    },
   },
 };
 </script>
