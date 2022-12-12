@@ -3,7 +3,7 @@
  * @Author: wanghongjian
  * @github: https://github.com/whj0117
  * @Date: 2022-12-07 11:16:11
- * @LastEditTime: 2022-12-08 14:01:17
+ * @LastEditTime: 2022-12-09 11:51:50
  * @LastEditors:  
  */
 export const TRAINNOLIST = () => [{
@@ -44,6 +44,7 @@ export const MARKERPOINT = () => [{
     p: { lng: 116.44, lat: 39.94 },
     s: { lng: 116.43, lat: 39.94 },
     ettaType: 'TRUNK',
+    icon:'red'
 }, {
     etdoNo: 'T202212071400',
     ettaNo: 'Y202212071500',
@@ -51,6 +52,7 @@ export const MARKERPOINT = () => [{
     toAddress: '西直门地铁站',//收货地址
     p: { lng: 116.36, lat: 39.94 },
     s: { lng: 116.36, lat: 39.94 },
+    icon:'red'
 }, {
     etdoNo: 'T202212071500',
     ettaNo: 'Y202212071600',
@@ -58,6 +60,7 @@ export const MARKERPOINT = () => [{
     toAddress: '北京西站地铁站',//收货地址
     p: { lng: 116.32, lat: 39.89 },
     s: { lng: 116.32, lat: 39.89 },
+    icon:'red'
 }, {
     etdoNo: '',
     ettaNo: 'Y202212071700',
@@ -65,6 +68,7 @@ export const MARKERPOINT = () => [{
     toAddress: '北京南站地铁站',//收货地址
     p: { lng: 116.38, lat: 39.87 },
     s: { lng: 116.38, lat: 39.87 },
+    icon:'red'
 }, {
     etdoNo: '',
     ettaNo: 'Y202212071800',
@@ -72,12 +76,14 @@ export const MARKERPOINT = () => [{
     toAddress: '四惠地铁站',//收货地址
     p: { lng: 116.50, lat: 39.91 },
     s: { lng: 116.50, lat: 39.91 },
+    icon:'red'
 }]
 
 export const CARICON = () => [{ icon: 'orange' }, { icon: 'black' }, { icon: 'green' }, { icon: 'purple' }, { icon: 'yellow' }, { icon: 'blue' }, { icon: 'red' }]
 
 export const RESETPATHS = () => {
 	return {
+        timeStamp: Date.now(),
 		path: [],//点坐标
 		tableData: [],//点数据
 		strokeWeight: 6,//线宽度
@@ -92,3 +98,35 @@ export const RESETPATHS = () => {
 		driveInfo: {},//距离和时间
 	}
 }
+
+export const LINEWIDTHOPTIONS = [{
+    value: 1,
+    label: '1px'
+}, {
+    value: 2,
+    label: '2px'
+}, {
+    value: 3,
+    label: '3px'
+}, {
+    value: 4,
+    label: '4px'
+}, {
+    value: 5,
+    label: '5px'
+}, {
+    value: 6,
+    label: '6px'
+}, {
+    value: 7,
+    label: '7px'
+}, {
+    value: 8,
+    label: '8px'
+}, {
+    value: 9,
+    label: '9px'
+}, {
+    value: 10,
+    label: '10px'
+}]

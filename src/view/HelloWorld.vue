@@ -3,7 +3,7 @@
  * @Author: wanghongjian
  * @github: https://github.com/whj0117
  * @Date: 2022-12-07 11:14:55
- * @LastEditTime: 2022-12-08 14:53:13
+ * @LastEditTime: 2022-12-09 11:49:37
  * @LastEditors:  
 -->
 <template>
@@ -217,15 +217,45 @@
             </bm-context-menu>
           </bm-marker>
         </div>
+        <div v-for="(item, index) of polylineList" :key="item.timeStamp">
+          <div>
+            <bm-polyline
+              v-if="item.bool"
+              :path="item.path"
+              :editing="item.editing"
+              :stroke-color="item.strokeColor"
+              :stroke-weight="item.strokeWeight"
+              :stroke-style="item.strokeStyle"
+              @mouseout="handlePolyLine($event, item, 'mouseout')"
+              @mouseover="handlePolyLine($event, item, 'mouseover')"
+              @click="handlePolyLine($event, item, 'click', index)"
+              @lineupdate="handlePolyLine($event, item, 'lineupdate')"
+              @mouseup="handlePolyLine($event, item, 'mouseup')"
+            />
+          </div>
+          <div>
+            <bm-driving
+              v-if="item.driveBool && item.path.length > 1"
+              :start="item.path[0]"
+              :end="item.path[item.path.length - 1]"
+              :auto-viewport="false"
+              :panel="false"
+              :waypoints="item.waypoints"
+              @searchcomplete="searchcomplete($event, item)"
+            />
+          </div>
+        </div>
       </baidu-map>
     </div>
     <chooseCar ref="chooseCar" />
+    <editPolyLine ref="editPolyLine" />
   </div>
 </template>
 
 <script>
 import { TRAINNOLIST, MARKERPOINT, CARICON, RESETPATHS } from "../utils/common";
 import chooseCar from "../components/chooseCar.vue";
+import editPolyLine from "../components/editPolyLine.vue";
 export default {
   name: "HelloWorld",
   props: {
@@ -234,7 +264,7 @@ export default {
       default: () => {},
     },
   },
-  components: { chooseCar },
+  components: { chooseCar,editPolyLine },
   data() {
     return {
       BMap: null,
@@ -303,11 +333,13 @@ export default {
       });
     },
     trainNoData({ handle, etdoNo, pro = [] }) {
+      console.log(">>>>>>>>>", pro);
       try {
+        etdoNo = etdoNo || pro[0].etdoNo;
+        let findIndex = this.trainNoList.findIndex(
+          (type) => type.etdoNo == etdoNo
+        );
         if (handle == "add") {
-          let findIndex = this.trainNoList.find(
-            (type) => type.etdoNo == etdoNo
-          );
           if (findIndex > -1) {
             this.trainNoList[findIndex].children = [
               ...this.trainNoList[findIndex].children,
@@ -316,11 +348,24 @@ export default {
           } else {
             this.trainNoList.push({
               etdoNo,
-              children: [pro],
+              children: pro,
             });
           }
         } else {
-          console.log(pro);
+          if (pro.length == this.trainNoList[findIndex].children.length) {
+            this.trainNoList.splice(findIndex, 1);
+          } else {
+            try {
+              let { children } = this.trainNoList[findIndex];
+              pro.forEach((item) => {
+                children((c, ci) => {
+                  if (c.ettaNo == item.ettaNo) {
+                    children.splice(ci, 1);
+                  }
+                });
+              });
+            } catch (err) {}
+          }
         }
       } catch (err) {}
       this.getTrainMarker();
@@ -419,7 +464,7 @@ export default {
         try {
           this.markerPoint.forEach((m) => {
             if (item.ettaNo == m.ettaNo) {
-              item.etdoNo = null;
+              // item.etdoNo = null;
               m.etdoNo = null;
               if (!m.isEditIcon && m.icon == "blue") m.icon = "red"; //说明原本是蓝色，没有修改过marker样式
               // m.icon = 'red'
@@ -606,6 +651,7 @@ export default {
         if (len > 1) item.icon = item.icon.split("&")[0];
       });
       const { polylineList, pathsConfig } = this;
+      console.log(pathsConfig)
       if (pathsConfig.path.length <= 1) {
         this.$message.error("请至少选择两个点进行连线");
         return false;
@@ -632,11 +678,56 @@ export default {
         });
         pathsConfig.waypoints = this.getWayPoints(pathsConfig.path);
         this.polylineList.push(pathsConfig);
-        this.saveLineConfig(pathsConfig);
+        // this.saveLineConfig(pathsConfig);
         this.editing = false;
         this.pathsConfig = RESETPATHS();
+        console.log('11111111111111',this.polylineList)
       } catch (err) {}
     },
+    // 线的操作事件
+		handlePolyLine(evt, item, handle, index) {
+			switch (handle) {
+				case "mouseout":
+					break;
+				case "mouseover":
+					break;
+				case "click":
+					// console.log(item)
+					// this.drawerData = item
+					this.tableIndex = index
+          this.$refs['editPolyLine'].handleOpen(item)
+					// this.drawer = true
+					// this.rowDrop()
+					// this.getTotalInfo()
+					break;
+				case "lineupdate":
+					const { markerPoint } = this
+					const getPath = evt.target.getPath()
+					var difference = null
+					if (getPath.length != item.path.length) {
+						if (getPath.length > item.path.length) {
+							difference = this.getArrDifference(getPath, item.path)
+						} else {
+							difference = this.getArrDifference(item.path, getPath)
+						}
+						// console.log(difference)
+						markerPoint.forEach(({ p }) => {
+							if (p.lng == difference.lng && p.lat == difference.lat) {
+								// console.log(p)
+							}
+						})
+					}
+					// item.path = evt.target.getPath()
+					break;
+				case "mouseup":
+					break;
+			}
+		},
+    // 获取途径点
+		getWayPoints(path) {
+			return path.length > 2 ? path.slice(1, path.length - 1) : false
+		},
+    getGoodsInfo(){},
     syncPolyline({ type, target, point, pixel, overlay }) {
       if (!this.guideLineBool) return;
       const { guideLineList } = this;
