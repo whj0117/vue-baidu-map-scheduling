@@ -3,8 +3,8 @@
  * @Author: wanghongjian
  * @github: https://github.com/whj0117
  * @Date: 2022-12-07 11:14:55
- * @LastEditTime: 2022-12-09 11:49:37
- * @LastEditors:  
+ * @LastEditTime: 2022-12-23 17:24:32
+ * @LastEditors: wanghongjian
 -->
 <template>
   <div class="wrapper">
@@ -149,7 +149,7 @@
         </bm-control>
         <div v-for="(item, index) in markerPoint" :key="index">
           <bm-marker
-            v-if="!item.bool"
+            v-if="item.bool"
             :position="item.p"
             :title="item.title"
             :icon="{
@@ -245,10 +245,156 @@
             />
           </div>
         </div>
+        <div v-for="item of guideMarkerList" :key="item.timeStamp">
+          <bm-marker
+            v-if="item.bool"
+            :position="item.p"
+            :title="item.title"
+            :dragging="true"
+            :icon="{ url: getMarkerIcon(item), size: getMarkerSize(item.size) }"
+            :animation="item.isAn ? 'BMAP_ANIMATION_BOUNCE' : ''"
+            @dragend="dragendGuideMarker($event, item)"
+          >
+            <bm-context-menu>
+              <bm-context-menu-item
+                :callback="() => editTask(item)"
+                text="编辑"
+              ></bm-context-menu-item>
+              <bm-context-menu-item
+                :callback="
+                  () =>
+                    deletePolyLine({
+                      etfdId: item.etfdId,
+                      key: 'guideMarkerList',
+                    })
+                "
+                text="删除"
+              ></bm-context-menu-item>
+            </bm-context-menu>
+          </bm-marker>
+        </div>
       </baidu-map>
     </div>
-    <chooseCar ref="chooseCar" />
+    <chooseCar ref="chooseCar" @emitChooseCar="emitChooseCar" />
     <editPolyLine ref="editPolyLine" />
+    <el-drawer
+      title="标记点编辑"
+      :visible.sync="markerDrawer"
+      size="500px"
+      direction="rtl"
+    >
+      <template #title>
+        <span style="font-size: 18px; color: #000; font-weight: bold"
+          >标记点编辑</span
+        >
+      </template>
+      <template>
+        <div class="polyLineEdit">
+          <div class="list-group">
+            <div class="list">
+              是否显示：
+              <el-switch v-model="markerDrawerData.bool" />
+            </div>
+            <div class="list">
+              当前位置：
+              <div v-if="markerDrawerData.isTrunk">
+                <el-input
+                  style="width: 215px"
+                  :disabled="!!markerDrawerData.ettaNo"
+                  @change="editGuideMarker(markerDrawerData)"
+                  v-model="markerDrawerData.ettaFromEbrgAddress"
+                  size="small"
+                  placeholder="请输入"
+                />
+              </div>
+              <div v-else>
+                <el-input
+                  style="width: 215px"
+                  :disabled="!!markerDrawerData.ettaNo"
+                  @change="editGuideMarker(markerDrawerData)"
+                  v-model="markerDrawerData.ettaEtorToEbrgAddress"
+                  size="small"
+                  placeholder="请输入"
+                />
+              </div>
+            </div>
+            <div class="list">
+              经纬度：
+              <span v-if="markerDrawerData.isTrunk"
+                >{{ markerDrawerData.s.lng }},{{ markerDrawerData.s.lat }}</span
+              >
+              <span v-else
+                >{{ markerDrawerData.p.lng }},{{ markerDrawerData.p.lat }}</span
+              >
+            </div>
+            <div class="list">
+              标记名称：
+              <el-input
+                style="width: 215px"
+                v-model="markerDrawerData.name"
+                size="small"
+                placeholder="请输入"
+              />
+            </div>
+            <div class="list">
+              标记样式：
+              <div
+                class="image-style"
+                v-if="markerDrawerData.icon"
+                @click.stop="$refs['markerSelect'].visible = true"
+              >
+                <img
+                  :src="
+                    getMarkerIcon({
+                      icon: markerDrawerData.icon,
+                      size: 'small',
+                    })
+                  "
+                />
+              </div>
+              <el-select
+                ref="markerSelect"
+                class="elSelectLine"
+                v-model="markerDrawerData.icon"
+                size="small"
+                placeholder=""
+              >
+                <el-option
+                  v-for="(item, index) in markerIcon"
+                  :key="index.icon"
+                  :label="item.icon"
+                  :value="item.icon"
+                >
+                  <img
+                    :src="getMarkerIcon({ icon: item.icon, size: 'small' })"
+                  />
+                </el-option>
+              </el-select>
+            </div>
+            <div class="list">
+              标记大小：
+              <el-select
+                v-model="markerDrawerData.size"
+                size="small"
+                placeholder="请选择"
+              >
+                <el-option label="小" value="small"></el-option>
+                <el-option label="大" value="big"></el-option>
+              </el-select>
+            </div>
+            <div class="list">
+              备注：
+              <el-input
+                style="width: 215px"
+                v-model="markerDrawerData.title"
+                size="small"
+                placeholder="请输入"
+              />
+            </div>
+          </div>
+        </div>
+      </template>
+    </el-drawer>
   </div>
 </template>
 
@@ -264,7 +410,7 @@ export default {
       default: () => {},
     },
   },
-  components: { chooseCar,editPolyLine },
+  components: { chooseCar, editPolyLine },
   data() {
     return {
       BMap: null,
@@ -282,6 +428,13 @@ export default {
       guideLineList: [],
       pathsConfig: RESETPATHS(),
       polylineList: [],
+      activeMarker: [], //右键打开已有车次
+      markerDrawerData: {
+        p: {},
+      },
+      markerDrawer: false,
+      guideMarkerList: [], //辅助点
+      guideMarkerBool: false,
     };
   },
   methods: {
@@ -292,9 +445,31 @@ export default {
       this.getTrainMarker();
     },
     // 打开选择车次dialog
-    openChooseCar() {
+    openChooseCar(item) {
+      this.activeMarker = item;
       this.$refs["chooseCar"].carDialogVisible = true;
     },
+    // 添加已有车次dialog确认按钮
+    emitChooseCar(currentCar) {
+      try {
+        this.trainNoList.forEach((item) => {
+          if (item.etdoNo == currentCar) {
+            const { children } = item;
+            item.children = [...children, ...this.activeMarker];
+          }
+        });
+      } catch (err) {}
+      console.log(this.trainNoList);
+    },
+    // 标记点编辑按钮
+    editTask(item) {
+      this.markerDrawerData = item;
+      this.markerDrawer = true;
+    },
+    // 拖拽辅助点结束
+		dragendGuideMarker({ type, target, pixel, point }, item) {
+			item.p = point
+		},
     handleOpen() {},
     handleClose() {},
     // 获取车次显示图标
@@ -326,14 +501,12 @@ export default {
             if (!this.markerIcon[maxObj.index].etdoNoList)
               this.$set(this.markerIcon[maxObj.index], "etdoNoList", []);
             this.markerIcon[maxObj.index].etdoNoList.push(etdoNo);
-            console.log(this.markerIcon);
             throw new Error();
           }
         } catch (err) {}
       });
     },
     trainNoData({ handle, etdoNo, pro = [] }) {
-      console.log(">>>>>>>>>", pro);
       try {
         etdoNo = etdoNo || pro[0].etdoNo;
         let findIndex = this.trainNoList.findIndex(
@@ -651,7 +824,7 @@ export default {
         if (len > 1) item.icon = item.icon.split("&")[0];
       });
       const { polylineList, pathsConfig } = this;
-      console.log(pathsConfig)
+      console.log(pathsConfig);
       if (pathsConfig.path.length <= 1) {
         this.$message.error("请至少选择两个点进行连线");
         return false;
@@ -681,53 +854,53 @@ export default {
         // this.saveLineConfig(pathsConfig);
         this.editing = false;
         this.pathsConfig = RESETPATHS();
-        console.log('11111111111111',this.polylineList)
+        console.log("11111111111111", this.polylineList);
       } catch (err) {}
     },
     // 线的操作事件
-		handlePolyLine(evt, item, handle, index) {
-			switch (handle) {
-				case "mouseout":
-					break;
-				case "mouseover":
-					break;
-				case "click":
-					// console.log(item)
-					// this.drawerData = item
-					this.tableIndex = index
-          this.$refs['editPolyLine'].handleOpen(item)
-					// this.drawer = true
-					// this.rowDrop()
-					// this.getTotalInfo()
-					break;
-				case "lineupdate":
-					const { markerPoint } = this
-					const getPath = evt.target.getPath()
-					var difference = null
-					if (getPath.length != item.path.length) {
-						if (getPath.length > item.path.length) {
-							difference = this.getArrDifference(getPath, item.path)
-						} else {
-							difference = this.getArrDifference(item.path, getPath)
-						}
-						// console.log(difference)
-						markerPoint.forEach(({ p }) => {
-							if (p.lng == difference.lng && p.lat == difference.lat) {
-								// console.log(p)
-							}
-						})
-					}
-					// item.path = evt.target.getPath()
-					break;
-				case "mouseup":
-					break;
-			}
-		},
+    handlePolyLine(evt, item, handle, index) {
+      switch (handle) {
+        case "mouseout":
+          break;
+        case "mouseover":
+          break;
+        case "click":
+          // console.log(item)
+          // this.drawerData = item
+          this.tableIndex = index;
+          this.$refs["editPolyLine"].handleOpen(item);
+          // this.drawer = true
+          // this.rowDrop()
+          // this.getTotalInfo()
+          break;
+        case "lineupdate":
+          const { markerPoint } = this;
+          const getPath = evt.target.getPath();
+          var difference = null;
+          if (getPath.length != item.path.length) {
+            if (getPath.length > item.path.length) {
+              difference = this.getArrDifference(getPath, item.path);
+            } else {
+              difference = this.getArrDifference(item.path, getPath);
+            }
+            // console.log(difference)
+            markerPoint.forEach(({ p }) => {
+              if (p.lng == difference.lng && p.lat == difference.lat) {
+                // console.log(p)
+              }
+            });
+          }
+          // item.path = evt.target.getPath()
+          break;
+        case "mouseup":
+          break;
+      }
+    },
     // 获取途径点
-		getWayPoints(path) {
-			return path.length > 2 ? path.slice(1, path.length - 1) : false
-		},
-    getGoodsInfo(){},
+    getWayPoints(path) {
+      return path.length > 2 ? path.slice(1, path.length - 1) : false;
+    },
+    getGoodsInfo() {},
     syncPolyline({ type, target, point, pixel, overlay }) {
       if (!this.guideLineBool) return;
       const { guideLineList } = this;
@@ -791,7 +964,7 @@ export default {
             isAn: false,
             timeStamp: Date.now(),
           };
-          this.saveLineConfig(obj, (etfdType = "guideMarker"));
+          // this.saveLineConfig(obj, (etfdType = "guideMarker"));
           this.guideMarkerList.push(obj);
         });
       } else if (this.guideLineBool) {
@@ -888,6 +1061,72 @@ export default {
       width: 100%;
       height: 100%;
     }
+  }
+}
+
+.polyLineEdit {
+  .btn-group {
+    padding: 0 20px;
+    box-sizing: border-box;
+  }
+
+  .tag-group {
+    margin: 20px 0;
+    padding: 0 20px;
+    box-sizing: border-box;
+    font-weight: bold;
+  }
+
+  .list-group {
+    padding: 0 20px;
+    box-sizing: border-box;
+
+    .list {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 20px;
+      font-size: 12px;
+    }
+  }
+}
+
+.line-type {
+  z-index: 1;
+  position: absolute;
+  width: 120px;
+  height: 0;
+  right: 30px;
+  border: 1px solid #000;
+}
+
+.line-width {
+  z-index: 1;
+  position: absolute;
+  width: 120px;
+  right: 30px;
+  background-color: #000;
+}
+
+.lineWidth {
+  width: 100%;
+  margin-top: 16px;
+  background-color: #000;
+}
+
+.image-style {
+  z-index: 1;
+  position: absolute;
+  top: 2px;
+  left: 260px;
+  cursor: pointer;
+}
+
+.elSelectLine {
+  ::v-deep .el-input__inner {
+    color: transparent;
+    text-indent: -100px;
   }
 }
 </style>

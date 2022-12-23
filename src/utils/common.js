@@ -3,24 +3,24 @@
  * @Author: wanghongjian
  * @github: https://github.com/whj0117
  * @Date: 2022-12-07 11:16:11
- * @LastEditTime: 2022-12-09 11:51:50
- * @LastEditors:  
+ * @LastEditTime: 2022-12-23 17:02:17
+ * @LastEditors: wanghongjian
  */
 export const TRAINNOLIST = () => [{
     etdoNo: 'T202212071400',
     children: [{
         etdoNo: 'T202212071400',
         ettaNo: 'Y202212071400',
-        fromAddress: '东直门地铁站',//发货地址
-        toAddress: '东直门地铁站',//收货地址
+        ettaFromEbrgAddress: '东直门地铁站',//发货地址
+        ettaEtorToEbrgAddress: '东直门地铁站',//收货地址
         p: { lng: 116.44, lat: 39.94 },
         s: { lng: 116.43, lat: 39.94 },
         ettaType: 'TRUNK'
     }, {
         etdoNo: 'T202212071400',
         ettaNo: 'Y202212071500',
-        fromAddress: '西直门地铁站',//发货地址
-        toAddress: '西直门地铁站',//收货地址
+        ettaFromEbrgAddress: '西直门地铁站',//发货地址
+        ettaEtorToEbrgAddress: '西直门地铁站',//收货地址
         p: { lng: 116.36, lat: 39.94 },
         s: { lng: 116.36, lat: 39.94 },
     }]
@@ -29,8 +29,8 @@ export const TRAINNOLIST = () => [{
     children: [{
         etdoNo: 'T202212071500',
         ettaNo: 'Y202212071600',
-        fromAddress: '北京西站地铁站',//发货地址
-        toAddress: '北京西站地铁站',//收货地址
+        ettaFromEbrgAddress: '北京西站地铁站',//发货地址
+        ettaEtorToEbrgAddress: '北京西站地铁站',//收货地址
         p: { lng: 116.32, lat: 39.89 },
         s: { lng: 116.32, lat: 39.89 },
     }]
@@ -39,44 +39,49 @@ export const TRAINNOLIST = () => [{
 export const MARKERPOINT = () => [{
     etdoNo: 'T202212071400',
     ettaNo: 'Y202212071400',
-    fromAddress: '东直门地铁站',//发货地址
-    toAddress: '东直门地铁站',//收货地址
+    ettaFromEbrgAddress: '东直门地铁站',//发货地址
+    ettaEtorToEbrgAddress: '东直门地铁站',//收货地址
     p: { lng: 116.44, lat: 39.94 },
     s: { lng: 116.43, lat: 39.94 },
     ettaType: 'TRUNK',
-    icon:'red'
+    icon:'red',
+    bool:true
 }, {
     etdoNo: 'T202212071400',
     ettaNo: 'Y202212071500',
-    fromAddress: '西直门地铁站',//发货地址
-    toAddress: '西直门地铁站',//收货地址
+    ettaFromEbrgAddress: '西直门地铁站',//发货地址
+    ettaEtorToEbrgAddress: '西直门地铁站',//收货地址
     p: { lng: 116.36, lat: 39.94 },
     s: { lng: 116.36, lat: 39.94 },
-    icon:'red'
+    icon:'red',
+    bool:true
 }, {
     etdoNo: 'T202212071500',
     ettaNo: 'Y202212071600',
-    fromAddress: '北京西站地铁站',//发货地址
-    toAddress: '北京西站地铁站',//收货地址
+    ettaFromEbrgAddress: '北京西站地铁站',//发货地址
+    ettaEtorToEbrgAddress: '北京西站地铁站',//收货地址
     p: { lng: 116.32, lat: 39.89 },
     s: { lng: 116.32, lat: 39.89 },
-    icon:'red'
+    icon:'red',
+    bool:true
 }, {
     etdoNo: '',
     ettaNo: 'Y202212071700',
-    fromAddress: '北京南站地铁站',//发货地址
-    toAddress: '北京南站地铁站',//收货地址
+    ettaFromEbrgAddress: '北京南站地铁站',//发货地址
+    ettaEtorToEbrgAddress: '北京南站地铁站',//收货地址
     p: { lng: 116.38, lat: 39.87 },
     s: { lng: 116.38, lat: 39.87 },
-    icon:'red'
+    icon:'red',
+    bool:true
 }, {
     etdoNo: '',
     ettaNo: 'Y202212071800',
-    fromAddress: '四惠地铁站',//发货地址
-    toAddress: '四惠地铁站',//收货地址
+    ettaFromEbrgAddress: '四惠地铁站',//发货地址
+    ettaEtorToEbrgAddress: '四惠地铁站',//收货地址
     p: { lng: 116.50, lat: 39.91 },
     s: { lng: 116.50, lat: 39.91 },
-    icon:'red'
+    icon:'red',
+    bool:true
 }]
 
 export const CARICON = () => [{ icon: 'orange' }, { icon: 'black' }, { icon: 'green' }, { icon: 'purple' }, { icon: 'yellow' }, { icon: 'blue' }, { icon: 'red' }]

@@ -3,8 +3,8 @@
  * @Author: wanghongjian
  * @github: https://github.com/whj0117
  * @Date: 2022-12-08 14:15:55
- * @LastEditTime: 2022-12-08 14:18:00
- * @LastEditors:  
+ * @LastEditTime: 2022-12-23 16:46:26
+ * @LastEditors: wanghongjian
 -->
 <template>
   <el-dialog
@@ -38,20 +38,32 @@
 
 <script>
 export default {
-    data(){
-        return{
-            carDialogVisible:false,
-            carTableData:[{
-                etdoNo:'T202212071400'
-            },{
-                etdoNo:'T202212071500'
-            }],
-            currentCar:null,
-        }
+  data() {
+    return {
+      carDialogVisible: false,
+      carTableData: [
+        {
+          etdoNo: "T202212071400",
+        },
+        {
+          etdoNo: "T202212071500",
+        },
+      ],
+      currentCar: null,
+    };
+  },
+  methods: {
+    chooseCar() {
+      if (!this.currentCar) {
+        this.$message.error("请选择车次");
+        return false;
+      }
+      this.$emit('emitChooseCar',this.currentCar)
+      this.carDialogVisible = false
+      // const { tableData } = this.polylineList[this.tableIndex];
+      // this.addTask(tableData);
     },
-    methods:{
-        chooseCar(){}
-    }
+  },
 };
 </script>
 
