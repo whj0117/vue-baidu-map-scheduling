@@ -3,7 +3,7 @@
  * @Author: wanghongjian
  * @github: https://github.com/whj0117
  * @Date: 2022-12-07 11:14:55
- * @LastEditTime: 2022-12-25 15:25:47
+ * @LastEditTime: 2022-12-25 15:40:21
  * @LastEditors: wanghongjian
 -->
 <template>
@@ -499,7 +499,8 @@
                 placeholder="请选择"
               >
                 <el-option label="实线" value="solid">
-                  <div style="
+                  <div
+                    style="
                       width: 100%;
                       margin-top: 16px;
                       border: 1px solid #000;
@@ -665,9 +666,7 @@
               icon="el-icon-delete"
               type="danger"
               size="small"
-              @click.stop="
-                deleteGuideLine
-              "
+              @click.stop="deleteGuideLine"
               >删除</el-button
             >
           </div>
@@ -778,252 +777,454 @@
       </template>
     </el-drawer>
     <el-drawer
-									title="全览"
-									:visible.sync="detailVisible"
-									size="100%"
-									direction="rtl">
-									<template #title>
-										<span style="font-size:18px;color:#000;font-weight:bold">全览</span>
-									</template>
-									<template>
-										<div style="padding:0 50px">
-											<div v-if="polylineList.length" style="margin-top:30px;margin-bottom:10px;font-size:16px;color:#000;font-weight:bold">线：</div>
-											<el-table v-if="polylineList.length" :data="polylineList" border>
-												<el-table-column prop="name" label="线条名称" align="center">
-													<template slot-scope="{$index,row}">
-														<el-input v-model="row.name" size="small" />
-													</template>
-												</el-table-column>
-												<el-table-column prop="strokeWeight" label="线条宽度" align="center">
-													<template slot-scope="{$index,row}">
-														<div class="line-width" style="width:45%;top:0;bottom:0;margin:auto 10% auto 0" v-if="row.strokeWeight" :style="{height:row.strokeWeight + 'px'}"></div>
-														<el-select v-model="row.strokeWeight" size="small" placeholder="请选择">
-															<el-option
-																v-for="item in options"
-																:key="item.value"
-																:label="item.label"
-																:value="item.value">
-																<div class="lineWidth" :style="{height:item.value + 'px'}"></div>
-															</el-option>
-														</el-select>
-													</template>
-												</el-table-column>
-												<el-table-column prop="strokeColor" label="线条颜色" align="center">
-													<template slot-scope="{$index,row}">
-														<el-color-picker v-model="row.strokeColor"></el-color-picker>
-													</template>
-												</el-table-column>
-												<el-table-column prop="strokeStyle" label="线条类型" align="center">
-													<template slot-scope="{$index,row}">
-														<div class="line-type" style="width:45%;top:0;bottom:0;margin:auto 10% auto 0" v-if="row.strokeStyle" :style="{borderStyle:row.strokeStyle}"></div>
-														<el-select v-model="row.strokeStyle" size="small" placeholder="请选择">
-															<el-option label="实线" value="solid">
-																<div style="width:100%;margin-top:16px;border:1px solid #000"></div>
-															</el-option>
-															<el-option label="虚线" value="dashed">
-																<div style="width:100%;margin-top:16px;border:1px dashed #000"></div>
-															</el-option>
-														</el-select>
-													</template>
-												</el-table-column>
-												<el-table-column
-													label="是否显示"
-													align="center">
-													<template slot-scope="{$index,row}">
-														<el-switch
-															v-model="row.bool"/>
-													</template>
-												</el-table-column>
-												<el-table-column
-													label="驾车路线"
-													align="center">
-													<template slot-scope="{$index,row}">
-														<el-switch v-model="row.driveBool" />
-													</template>
-												</el-table-column>
-												<el-table-column
-													label="操作"
-													align="center">
-													<template slot-scope="{$index,row:{etfdId}}">
-														<el-button
-															@click.native.prevent="deletePolyLine({etfdId})"
-															type="text"
-															size="small">
-															删除
-														</el-button>
-													</template>
-												</el-table-column>
-											</el-table>
-											<div v-if="markerPoint.length" style="margin-top:30px;margin-bottom:10px;font-size:16px;color:#000;font-weight:bold">点：</div>
-											<el-table v-if="markerPoint.length" :data="markerPoint" border>
-												<el-table-column prop="ettaNo" label="订单编号" align="center"></el-table-column>
-												<el-table-column label="标记样式" align="center">
-													<template slot-scope="{$index,row}">
-														<div class="image-style" style="left:15%;top:26%" v-if="row.icon" @click.stop="$refs['markerSelect_'+$index].visible = true">
-															<img :src="getMarkerIcon({icon:row.icon,size:'small'})" />
-														</div>
-														<el-select :ref="'markerSelect_'+$index" class="elSelectLine" v-model="row.icon" @change="saveMarkerConfig(row)" size="small" placeholder="">
-															<el-option
-																v-for="(item,index) in markerIcon"
-																:key="index.icon"
-																:label="item.icon"
-																:value="item.icon">
-																<img :src="getMarkerIcon({icon:item.icon,size:'small'})" />
-															</el-option>
-														</el-select>
-													</template>
-												</el-table-column>
-												<el-table-column prop="name" label="标记名称" align="center">
-													<template slot-scope="{$index,row}">
-														<el-input v-model="row.name" size="small" @change="saveMarkerConfig(row)" />
-													</template>
-												</el-table-column>
-												<el-table-column prop="ettaEtorToEbrgAddress" label="详细地址" align="center" min-width="200px"></el-table-column>
-												<el-table-column label="经纬度" align="center">
-													<template slot-scope="{row:{p:{lng,lat}}}">{{lng}},{{lat}}
-													</template>
-												</el-table-column>
-												<el-table-column
-													label="是否显示"
-													align="center">
-													<template slot-scope="{row}">
-														<el-switch
-															v-model="row.bool" @change="saveMarkerConfig(row)">
-														</el-switch>
-													</template>
-												</el-table-column>
-												<el-table-column prop="title" label="备注" align="center">
-													<template slot-scope="{$index,row}">
-														<el-input v-model="row.title" size="small" @change="saveMarkerConfig(row)" />
-													</template>
-												</el-table-column>
-											</el-table>
-											<div v-if="guideLineList.length" style="margin-top:30px;margin-bottom:10px;font-size:16px;color:#000;font-weight:bold">辅助线：</div>
-											<el-table v-if="guideLineList.length" :data="guideLineList" border>
-												<el-table-column prop="name" label="线条名称" align="center">
-													<template slot-scope="{$index,row}">
-														<el-input v-model="row.name" size="small" @change="saveLineConfig(row,'guideLine')" />
-													</template>
-												</el-table-column>
-												<el-table-column prop="strokeWeight" label="线条宽度" align="center">
-													<template slot-scope="{$index,row}">
-														<div class="line-width" style="width:45%;top:0;bottom:0;margin:auto 10% auto 0" v-if="row.strokeWeight" :style="{height:row.strokeWeight + 'px'}"></div>
-														<el-select v-model="row.strokeWeight" @change="saveLineConfig(row,'guideLine')" size="small" placeholder="请选择">
-															<el-option
-																v-for="item in options"
-																:key="item.value"
-																:label="item.label"
-																:value="item.value">
-																<div class="lineWidth" :style="{height:item.value + 'px'}"></div>
-															</el-option>
-														</el-select>
-													</template>
-												</el-table-column>
-												<el-table-column prop="strokeColor" label="线条颜色" align="center">
-													<template slot-scope="{$index,row}">
-														<el-color-picker v-model="row.strokeColor" @change="saveLineConfig(row,'guideLine')"></el-color-picker>
-													</template>
-												</el-table-column>
-												<el-table-column prop="strokeStyle" label="线条类型" align="center">
-													<template slot-scope="{$index,row}">
-														<div class="line-type" style="width:45%;top:0;bottom:0;margin:auto 10% auto 0" v-if="row.strokeStyle" :style="{borderStyle:row.strokeStyle}"></div>
-														<el-select v-model="row.strokeStyle" @change="saveLineConfig(row,'guideLine')" size="small" placeholder="请选择">
-															<el-option label="实线" value="solid">
-																<div style="width:100%;margin-top:16px;border:1px solid #000"></div>
-															</el-option>
-															<el-option label="虚线" value="dashed">
-																<div style="width:100%;margin-top:16px;border:1px dashed #000"></div>
-															</el-option>
-														</el-select>
-													</template>
-												</el-table-column>
-												<el-table-column
-													label="是否显示"
-													align="center">
-													<template slot-scope="{$index,row}">
-														<el-switch
-															v-model="row.bool"
-															@change="saveLineConfig(row,'guideLine')" />
-													</template>
-												</el-table-column>
-												<el-table-column
-													label="驾车路线"
-													align="center">
-													<template slot-scope="{$index,row}">
-														<el-switch v-model="row.driveBool" @change="saveLineConfig(row,'guideLine')" />
-													</template>
-												</el-table-column>
-												<el-table-column
-													label="操作"
-													align="center">
-													<template slot-scope="{$index,row:{etfdId}}">
-														<el-button
-															@click.native.prevent="deletePolyLine({etfdId,key:'guideLineList'})"
-															type="text"
-															size="small">
-															删除
-														</el-button>
-													</template>
-												</el-table-column>
-											</el-table>
-											<div v-if="guideMarkerList.length" style="margin-top:30px;margin-bottom:10px;font-size:16px;color:#000;font-weight:bold">辅助点：</div>
-											<el-table v-if="guideMarkerList.length" :data="guideMarkerList" border>
-												<el-table-column label="标记样式" align="center">
-													<template slot-scope="{$index,row}">
-														<div class="image-style" style="left:15%;top:26%" v-if="row.icon" @click.stop="$refs['markerSelect_'+$index].visible = true">
-															<img :src="getMarkerIcon({icon:row.icon,size:'small'})" />
-														</div>
-														<el-select :ref="'markerSelect_'+$index" class="elSelectLine" v-model="row.icon" @change="saveMarkerConfig(row)" size="small" placeholder="">
-															<el-option
-																v-for="(item,index) in markerIcon"
-																:key="index.icon"
-																:label="item.icon"
-																:value="item.icon">
-																<img :src="getMarkerIcon({icon:item.icon,size:'small'})" />
-															</el-option>
-														</el-select>
-													</template>
-												</el-table-column>
-												<el-table-column prop="name" label="标记名称" align="center">
-													<template slot-scope="{$index,row}">
-														<el-input v-model="row.name" size="small" @change="saveMarkerConfig(row)" />
-													</template>
-												</el-table-column>
-												<el-table-column prop="ettaEtorToEbrgAddress" label="详细地址" align="center" min-width="200px"></el-table-column>
-												<el-table-column label="经纬度" align="center">
-													<template slot-scope="{row:{p:{lng,lat}}}">{{lng}},{{lat}}
-													</template>
-												</el-table-column>
-												<el-table-column
-													label="是否显示"
-													align="center">
-													<template slot-scope="{row}">
-														<el-switch
-															v-model="row.bool" @change="saveMarkerConfig(row)">
-														</el-switch>
-													</template>
-												</el-table-column>
-												<el-table-column prop="title" label="备注" align="center">
-													<template slot-scope="{$index,row}">
-														<el-input v-model="row.title" size="small" @change="saveMarkerConfig(row)" />
-													</template>
-												</el-table-column>
-												<el-table-column
-													label="操作"
-													align="center">
-													<template slot-scope="{$index,row:{etfdId}}">
-														<el-button
-															@click.native.prevent="deletePolyLine({etfdId,key:'guideMarkerList'})"
-															type="text"
-															size="small">
-															删除
-														</el-button>
-													</template>
-												</el-table-column>
-											</el-table>
-										</div>
-									</template>
-								</el-drawer>
+      title="全览"
+      :visible.sync="detailVisible"
+      size="100%"
+      direction="rtl"
+    >
+      <template #title>
+        <span style="font-size: 18px; color: #000; font-weight: bold"
+          >全览</span
+        >
+      </template>
+      <template>
+        <div style="padding: 0 50px">
+          <div
+            v-if="polylineList.length"
+            style="
+              margin-top: 30px;
+              margin-bottom: 10px;
+              font-size: 16px;
+              color: #000;
+              font-weight: bold;
+            "
+          >
+            线：
+          </div>
+          <el-table v-if="polylineList.length" :data="polylineList" border>
+            <el-table-column prop="name" label="线条名称" align="center">
+              <template slot-scope="{ $index, row }">
+                <el-input v-model="row.name" size="small" />
+              </template>
+            </el-table-column>
+            <el-table-column
+              prop="strokeWeight"
+              label="线条宽度"
+              align="center"
+            >
+              <template slot-scope="{ $index, row }">
+                <div
+                  class="line-width"
+                  style="width: 45%; top: 0; bottom: 0; margin: auto 10% auto 0"
+                  v-if="row.strokeWeight"
+                  :style="{ height: row.strokeWeight + 'px' }"
+                ></div>
+                <el-select
+                  v-model="row.strokeWeight"
+                  size="small"
+                  placeholder="请选择"
+                >
+                  <el-option
+                    v-for="item in options"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value"
+                  >
+                    <div
+                      class="lineWidth"
+                      :style="{ height: item.value + 'px' }"
+                    ></div>
+                  </el-option>
+                </el-select>
+              </template>
+            </el-table-column>
+            <el-table-column prop="strokeColor" label="线条颜色" align="center">
+              <template slot-scope="{ $index, row }">
+                <el-color-picker v-model="row.strokeColor"></el-color-picker>
+              </template>
+            </el-table-column>
+            <el-table-column prop="strokeStyle" label="线条类型" align="center">
+              <template slot-scope="{ $index, row }">
+                <div
+                  class="line-type"
+                  style="width: 45%; top: 0; bottom: 0; margin: auto 10% auto 0"
+                  v-if="row.strokeStyle"
+                  :style="{ borderStyle: row.strokeStyle }"
+                ></div>
+                <el-select
+                  v-model="row.strokeStyle"
+                  size="small"
+                  placeholder="请选择"
+                >
+                  <el-option label="实线" value="solid">
+                    <div
+                      style="
+                        width: 100%;
+                        margin-top: 16px;
+                        border: 1px solid #000;
+                      "
+                    ></div>
+                  </el-option>
+                  <el-option label="虚线" value="dashed">
+                    <div
+                      style="
+                        width: 100%;
+                        margin-top: 16px;
+                        border: 1px dashed #000;
+                      "
+                    ></div>
+                  </el-option>
+                </el-select>
+              </template>
+            </el-table-column>
+            <el-table-column label="是否显示" align="center">
+              <template slot-scope="{ $index, row }">
+                <el-switch v-model="row.bool" />
+              </template>
+            </el-table-column>
+            <el-table-column label="驾车路线" align="center">
+              <template slot-scope="{ $index, row }">
+                <el-switch v-model="row.driveBool" />
+              </template>
+            </el-table-column>
+            <el-table-column label="操作" align="center">
+              <template slot-scope="{ $index, row: { etfdId } }">
+                <el-button
+                  @click.native.prevent="deletePolyLine({ etfdId })"
+                  type="text"
+                  size="small"
+                >
+                  删除
+                </el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+          <div
+            v-if="markerPoint.length"
+            style="
+              margin-top: 30px;
+              margin-bottom: 10px;
+              font-size: 16px;
+              color: #000;
+              font-weight: bold;
+            "
+          >
+            点：
+          </div>
+          <el-table v-if="markerPoint.length" :data="markerPoint" border>
+            <el-table-column
+              prop="ettaNo"
+              label="订单编号"
+              align="center"
+            ></el-table-column>
+            <el-table-column label="标记样式" align="center">
+              <template slot-scope="{ $index, row }">
+                <div
+                  class="image-style"
+                  style="left: 15%; top: 26%"
+                  v-if="row.icon"
+                  @click.stop="$refs['markerSelect_' + $index].visible = true"
+                >
+                  <img
+                    :src="getMarkerIcon({ icon: row.icon, size: 'small' })"
+                  />
+                </div>
+                <el-select
+                  :ref="'markerSelect_' + $index"
+                  class="elSelectLine"
+                  v-model="row.icon"
+                  @change="saveMarkerConfig(row)"
+                  size="small"
+                  placeholder=""
+                >
+                  <el-option
+                    v-for="(item, index) in markerIcon"
+                    :key="index.icon"
+                    :label="item.icon"
+                    :value="item.icon"
+                  >
+                    <img
+                      :src="getMarkerIcon({ icon: item.icon, size: 'small' })"
+                    />
+                  </el-option>
+                </el-select>
+              </template>
+            </el-table-column>
+            <el-table-column prop="name" label="标记名称" align="center">
+              <template slot-scope="{ $index, row }">
+                <el-input
+                  v-model="row.name"
+                  size="small"
+                  @change="saveMarkerConfig(row)"
+                />
+              </template>
+            </el-table-column>
+            <el-table-column
+              prop="ettaEtorToEbrgAddress"
+              label="详细地址"
+              align="center"
+              min-width="200px"
+            ></el-table-column>
+            <el-table-column label="经纬度" align="center">
+              <template
+                slot-scope="{
+                  row: {
+                    p: { lng, lat },
+                  },
+                }"
+                >{{ lng }},{{ lat }}
+              </template>
+            </el-table-column>
+            <el-table-column label="是否显示" align="center">
+              <template slot-scope="{ row }">
+                <el-switch v-model="row.bool" @change="saveMarkerConfig(row)">
+                </el-switch>
+              </template>
+            </el-table-column>
+            <el-table-column prop="title" label="备注" align="center">
+              <template slot-scope="{ $index, row }">
+                <el-input
+                  v-model="row.title"
+                  size="small"
+                  @change="saveMarkerConfig(row)"
+                />
+              </template>
+            </el-table-column>
+          </el-table>
+          <div
+            v-if="guideLineList.length"
+            style="
+              margin-top: 30px;
+              margin-bottom: 10px;
+              font-size: 16px;
+              color: #000;
+              font-weight: bold;
+            "
+          >
+            辅助线：
+          </div>
+          <el-table v-if="guideLineList.length" :data="guideLineList" border>
+            <el-table-column prop="name" label="线条名称" align="center">
+              <template slot-scope="{ $index, row }">
+                <el-input
+                  v-model="row.name"
+                  size="small"
+                  @change="saveLineConfig(row, 'guideLine')"
+                />
+              </template>
+            </el-table-column>
+            <el-table-column
+              prop="strokeWeight"
+              label="线条宽度"
+              align="center"
+            >
+              <template slot-scope="{ $index, row }">
+                <div
+                  class="line-width"
+                  style="width: 45%; top: 0; bottom: 0; margin: auto 10% auto 0"
+                  v-if="row.strokeWeight"
+                  :style="{ height: row.strokeWeight + 'px' }"
+                ></div>
+                <el-select
+                  v-model="row.strokeWeight"
+                  @change="saveLineConfig(row, 'guideLine')"
+                  size="small"
+                  placeholder="请选择"
+                >
+                  <el-option
+                    v-for="item in options"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value"
+                  >
+                    <div
+                      class="lineWidth"
+                      :style="{ height: item.value + 'px' }"
+                    ></div>
+                  </el-option>
+                </el-select>
+              </template>
+            </el-table-column>
+            <el-table-column prop="strokeColor" label="线条颜色" align="center">
+              <template slot-scope="{ $index, row }">
+                <el-color-picker
+                  v-model="row.strokeColor"
+                  @change="saveLineConfig(row, 'guideLine')"
+                ></el-color-picker>
+              </template>
+            </el-table-column>
+            <el-table-column prop="strokeStyle" label="线条类型" align="center">
+              <template slot-scope="{ $index, row }">
+                <div
+                  class="line-type"
+                  style="width: 45%; top: 0; bottom: 0; margin: auto 10% auto 0"
+                  v-if="row.strokeStyle"
+                  :style="{ borderStyle: row.strokeStyle }"
+                ></div>
+                <el-select
+                  v-model="row.strokeStyle"
+                  @change="saveLineConfig(row, 'guideLine')"
+                  size="small"
+                  placeholder="请选择"
+                >
+                  <el-option label="实线" value="solid">
+                    <div
+                      style="
+                        width: 100%;
+                        margin-top: 16px;
+                        border: 1px solid #000;
+                      "
+                    ></div>
+                  </el-option>
+                  <el-option label="虚线" value="dashed">
+                    <div
+                      style="
+                        width: 100%;
+                        margin-top: 16px;
+                        border: 1px dashed #000;
+                      "
+                    ></div>
+                  </el-option>
+                </el-select>
+              </template>
+            </el-table-column>
+            <el-table-column label="是否显示" align="center">
+              <template slot-scope="{ $index, row }">
+                <el-switch
+                  v-model="row.bool"
+                  @change="saveLineConfig(row, 'guideLine')"
+                />
+              </template>
+            </el-table-column>
+            <el-table-column label="驾车路线" align="center">
+              <template slot-scope="{ $index, row }">
+                <el-switch
+                  v-model="row.driveBool"
+                  @change="saveLineConfig(row, 'guideLine')"
+                />
+              </template>
+            </el-table-column>
+            <el-table-column label="操作" align="center">
+              <template slot-scope="{ $index, row: { etfdId } }">
+                <el-button
+                  @click.native.prevent="
+                    deletePolyLine({ etfdId, key: 'guideLineList' })
+                  "
+                  type="text"
+                  size="small"
+                >
+                  删除
+                </el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+          <div
+            v-if="guideMarkerList.length"
+            style="
+              margin-top: 30px;
+              margin-bottom: 10px;
+              font-size: 16px;
+              color: #000;
+              font-weight: bold;
+            "
+          >
+            辅助点：
+          </div>
+          <el-table
+            v-if="guideMarkerList.length"
+            :data="guideMarkerList"
+            border
+          >
+            <el-table-column label="标记样式" align="center">
+              <template slot-scope="{ $index, row }">
+                <div
+                  class="image-style"
+                  style="left: 15%; top: 26%"
+                  v-if="row.icon"
+                  @click.stop="$refs['markerSelect_' + $index].visible = true"
+                >
+                  <img
+                    :src="getMarkerIcon({ icon: row.icon, size: 'small' })"
+                  />
+                </div>
+                <el-select
+                  :ref="'markerSelect_' + $index"
+                  class="elSelectLine"
+                  v-model="row.icon"
+                  @change="saveMarkerConfig(row)"
+                  size="small"
+                  placeholder=""
+                >
+                  <el-option
+                    v-for="(item, index) in markerIcon"
+                    :key="index.icon"
+                    :label="item.icon"
+                    :value="item.icon"
+                  >
+                    <img
+                      :src="getMarkerIcon({ icon: item.icon, size: 'small' })"
+                    />
+                  </el-option>
+                </el-select>
+              </template>
+            </el-table-column>
+            <el-table-column prop="name" label="标记名称" align="center">
+              <template slot-scope="{ $index, row }">
+                <el-input
+                  v-model="row.name"
+                  size="small"
+                  @change="saveMarkerConfig(row)"
+                />
+              </template>
+            </el-table-column>
+            <el-table-column
+              prop="ettaEtorToEbrgAddress"
+              label="详细地址"
+              align="center"
+              min-width="200px"
+            ></el-table-column>
+            <el-table-column label="经纬度" align="center">
+              <template
+                slot-scope="{
+                  row: {
+                    p: { lng, lat },
+                  },
+                }"
+                >{{ lng }},{{ lat }}
+              </template>
+            </el-table-column>
+            <el-table-column label="是否显示" align="center">
+              <template slot-scope="{ row }">
+                <el-switch v-model="row.bool" @change="saveMarkerConfig(row)">
+                </el-switch>
+              </template>
+            </el-table-column>
+            <el-table-column prop="title" label="备注" align="center">
+              <template slot-scope="{ $index, row }">
+                <el-input
+                  v-model="row.title"
+                  size="small"
+                  @change="saveMarkerConfig(row)"
+                />
+              </template>
+            </el-table-column>
+            <el-table-column label="操作" align="center">
+              <template slot-scope="{ $index, row: { etfdId } }">
+                <el-button
+                  @click.native.prevent="
+                    deletePolyLine({ etfdId, key: 'guideMarkerList' })
+                  "
+                  type="text"
+                  size="small"
+                >
+                  删除
+                </el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+        </div>
+      </template>
+    </el-drawer>
   </div>
 </template>
 
@@ -1070,7 +1271,7 @@ export default {
       guideMarkerBool: false,
       guideLineBool: false,
       guideLineList: [],
-      guideLineDrawer: false,//辅助线弹窗开关
+      guideLineDrawer: false, //辅助线弹窗开关
       pathsConfig: RESETPATHS(),
       polylineList: [],
       activeMarker: [], //右键打开已有车次
@@ -1083,7 +1284,7 @@ export default {
       drawer: false,
       drawerData: {},
       options: LINEWIDTHOPTIONS,
-      detailVisible:false,
+      detailVisible: false,
     };
   },
   methods: {
@@ -1163,14 +1364,17 @@ export default {
       });
     },
     // 删除辅助线
-    deleteGuideLine(){
-      const {timeStamp} = this.drawerData
-      this.guideLineList.splice(this.guideLineList.findIndex(type=>type.timeStamp == timeStamp),1)
+    deleteGuideLine() {
+      const { timeStamp } = this.drawerData;
+      this.guideLineList.splice(
+        this.guideLineList.findIndex((type) => type.timeStamp == timeStamp),
+        1
+      );
       this.$message({
         message: "删除成功",
         type: "success",
       });
-      this.guideLineDrawer = false
+      this.guideLineDrawer = false;
     },
     // 拖拽辅助点结束
     dragendGuideMarker({ type, target, pixel, point }, item) {
