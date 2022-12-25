@@ -10,6 +10,7 @@
   "dependencies": {
     "core-js": "^3.26.1",
     "element-ui": "^2.15.12",
+    "sortablejs": "^1.15.0",
     "vue": "^2.6.14",
     "vue-baidu-map": "^0.21.22"
   },

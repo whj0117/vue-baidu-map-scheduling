@@ -52,7 +52,7 @@
           <el-tag type="success">总重量：{{ getShopSize.w }} </el-tag>
           <el-tag type="warning">总数量：{{ getShopSize.q }} </el-tag>
         </div> -->
-        <el-table
+        <!-- <el-table
           :data="drawerData.tableData"
           @cell-mouse-enter="cellMouse($event, 'enter')"
           @cell-mouse-leave="cellMouse($event, 'leave')"
@@ -87,13 +87,7 @@
             </template>
           </el-table-column>
           <el-table-column
-            prop="ettaSoNo"
-            label="客户单号"
-            align="center"
-            width="100"
-          ></el-table-column>
-          <el-table-column
-            prop="ettaToEbrgAddress"
+            prop="ettaEtorToEbrgAddress"
             label="客户地址"
             align="center"
           ></el-table-column>
@@ -108,7 +102,7 @@
               </el-button>
             </template>
           </el-table-column>
-        </el-table>
+        </el-table> -->
         <div class="list-group">
           <div class="list">
             驾车路线：
@@ -221,6 +215,20 @@ export default {
       this.drawerData = item;
       this.drawer = true;
     },
+    // 鼠标进入/离开表格事件
+		cellMouse(evt, val) {
+      this.$emit('cellMouse',evt.ettaNo,val)
+		},
+    deletePolyLine(){
+      this.$emit('deletePolyLine')
+      this.drawer = false
+    },
+    addNewCar(){
+      this.$emit('addTask',this.drawerData.tableData)
+    },
+    addCar(){
+      this.$emit('openChooseCar',this.drawerData.tableData)
+    }
   },
 };
 </script>

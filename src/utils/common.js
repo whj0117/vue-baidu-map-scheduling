@@ -3,7 +3,7 @@
  * @Author: wanghongjian
  * @github: https://github.com/whj0117
  * @Date: 2022-12-07 11:16:11
- * @LastEditTime: 2022-12-23 17:02:17
+ * @LastEditTime: 2022-12-25 13:41:33
  * @LastEditors: wanghongjian
  */
 export const TRAINNOLIST = () => [{
@@ -13,7 +13,7 @@ export const TRAINNOLIST = () => [{
         ettaNo: 'Y202212071400',
         ettaFromEbrgAddress: '东直门地铁站',//发货地址
         ettaEtorToEbrgAddress: '东直门地铁站',//收货地址
-        p: { lng: 116.44, lat: 39.94 },
+        p: { lng: 116.439622, lat: 39.947922 },
         s: { lng: 116.43, lat: 39.94 },
         ettaType: 'TRUNK'
     }, {
@@ -21,7 +21,7 @@ export const TRAINNOLIST = () => [{
         ettaNo: 'Y202212071500',
         ettaFromEbrgAddress: '西直门地铁站',//发货地址
         ettaEtorToEbrgAddress: '西直门地铁站',//收货地址
-        p: { lng: 116.36, lat: 39.94 },
+        p: { lng: 116.360778, lat: 39.94668 },
         s: { lng: 116.36, lat: 39.94 },
     }]
 }, {
@@ -31,7 +31,7 @@ export const TRAINNOLIST = () => [{
         ettaNo: 'Y202212071600',
         ettaFromEbrgAddress: '北京西站地铁站',//发货地址
         ettaEtorToEbrgAddress: '北京西站地铁站',//收货地址
-        p: { lng: 116.32, lat: 39.89 },
+        p: { lng: 116.327811, lat: 39.900678 },
         s: { lng: 116.32, lat: 39.89 },
     }]
 }]
@@ -41,47 +41,52 @@ export const MARKERPOINT = () => [{
     ettaNo: 'Y202212071400',
     ettaFromEbrgAddress: '东直门地铁站',//发货地址
     ettaEtorToEbrgAddress: '东直门地铁站',//收货地址
-    p: { lng: 116.44, lat: 39.94 },
+    p: { lng: 116.439622, lat: 39.947922 },
     s: { lng: 116.43, lat: 39.94 },
-    ettaType: 'TRUNK',
+    ettaType: '',
     icon:'red',
-    bool:true
+    bool:true,
+    isAn:false,
 }, {
     etdoNo: 'T202212071400',
     ettaNo: 'Y202212071500',
     ettaFromEbrgAddress: '西直门地铁站',//发货地址
     ettaEtorToEbrgAddress: '西直门地铁站',//收货地址
-    p: { lng: 116.36, lat: 39.94 },
+    p: { lng: 116.360778, lat: 39.94668 },
     s: { lng: 116.36, lat: 39.94 },
     icon:'red',
-    bool:true
+    bool:true,
+    isAn:false,
 }, {
     etdoNo: 'T202212071500',
     ettaNo: 'Y202212071600',
     ettaFromEbrgAddress: '北京西站地铁站',//发货地址
     ettaEtorToEbrgAddress: '北京西站地铁站',//收货地址
-    p: { lng: 116.32, lat: 39.89 },
+    p: { lng: 116.327811, lat: 39.900678 },
     s: { lng: 116.32, lat: 39.89 },
     icon:'red',
-    bool:true
+    bool:true,
+    isAn:false,
 }, {
     etdoNo: '',
     ettaNo: 'Y202212071700',
     ettaFromEbrgAddress: '北京南站地铁站',//发货地址
     ettaEtorToEbrgAddress: '北京南站地铁站',//收货地址
-    p: { lng: 116.38, lat: 39.87 },
+    p: { lng: 116.385671, lat: 39.871141 },
     s: { lng: 116.38, lat: 39.87 },
     icon:'red',
-    bool:true
+    bool:true,
+    isAn:false,
 }, {
     etdoNo: '',
     ettaNo: 'Y202212071800',
     ettaFromEbrgAddress: '四惠地铁站',//发货地址
     ettaEtorToEbrgAddress: '四惠地铁站',//收货地址
-    p: { lng: 116.50, lat: 39.91 },
+    p: { lng: 116.501987, lat: 39.914886 },
     s: { lng: 116.50, lat: 39.91 },
     icon:'red',
-    bool:true
+    bool:true,
+    isAn:false,
 }]
 
 export const CARICON = () => [{ icon: 'orange' }, { icon: 'black' }, { icon: 'green' }, { icon: 'purple' }, { icon: 'yellow' }, { icon: 'blue' }, { icon: 'red' }]
@@ -135,3 +140,18 @@ export const LINEWIDTHOPTIONS = [{
     value: 10,
     label: '10px'
 }]
+
+export const RESETGUIDELINE = () => {
+	return {
+		path: [],
+		strokeWeight: 6,
+		strokeColor: '#000',
+		strokeStyle: 'solid',
+		bool: true,//是否显示
+		name: '我是辅助线',//路线名称
+		driveBool: false,
+		editing: false,//是否编辑
+		waypoints: false,
+		driveInfo: {},//距离和时间
+	}
+}

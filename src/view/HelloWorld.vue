@@ -3,7 +3,7 @@
  * @Author: wanghongjian
  * @github: https://github.com/whj0117
  * @Date: 2022-12-07 11:14:55
- * @LastEditTime: 2022-12-23 17:24:32
+ * @LastEditTime: 2022-12-25 14:57:14
  * @LastEditors: wanghongjian
 -->
 <template>
@@ -276,7 +276,220 @@
       </baidu-map>
     </div>
     <chooseCar ref="chooseCar" @emitChooseCar="emitChooseCar" />
-    <editPolyLine ref="editPolyLine" />
+    <el-drawer
+      title="线路编辑"
+      :visible.sync="drawer"
+      size="500px"
+      direction="rtl"
+      @close="tableIndex = null"
+    >
+      <template #title>
+        <span style="font-size: 18px; color: #000; font-weight: bold"
+          >线路编辑</span
+        >
+      </template>
+      <template>
+        <div class="polyLineEdit">
+          <div class="btn-group">
+            <el-button
+              v-if="!drawerData.etdoNo"
+              icon="el-icon-delete"
+              type="danger"
+              size="small"
+              @click.stop="deletePolyLine"
+              >删除</el-button
+            >
+            <el-button
+              v-if="!drawerData.etdoNo"
+              icon="el-icon-truck"
+              type="primary"
+              size="small"
+              @click.stop="addTask(drawerData.tableData)"
+              >生成新车次并添加</el-button
+            >
+            <el-button
+              v-if="!drawerData.etdoNo"
+              icon="el-icon-truck"
+              type="success"
+              size="small"
+              @click.stop="openChooseCar(drawerData.tableData)"
+              >添加到已有车次</el-button
+            >
+            <el-button
+              v-if="drawerData.etdoNo"
+              icon="el-icon-truck"
+              type="primary"
+              size="small"
+              @click.stop="removeCar"
+              >移除车次</el-button
+            >
+          </div>
+          <!-- <div class="tag-group">
+          <el-tag>总体积：{{ getShopSize.v }} </el-tag>
+          <el-tag type="success">总重量：{{ getShopSize.w }} </el-tag>
+          <el-tag type="warning">总数量：{{ getShopSize.q }} </el-tag>
+        </div> -->
+          <!-- <el-table
+          :data="drawerData.tableData"
+          @cell-mouse-enter="cellMouse($event, 'enter')"
+          @cell-mouse-leave="cellMouse($event, 'leave')"
+        >
+          <el-table-column type="expand" width="40px" align="center">
+            <template slot-scope="{ row: { shopInfo } }">
+              <div
+                v-for="(item, index) in shopInfo"
+                :key="index"
+                style="padding: 0 20px; box-sizing: border-box"
+              >
+                <el-descriptions
+                  :column="3"
+                  :title="
+                    item.ettmEbmaNameCn + '（' + item.ettmMaterialNo + '）'
+                  "
+                  size="small"
+                  border
+                >
+                  <el-descriptions-item label="体积:"
+                    >{{ item.v }}
+                  </el-descriptions-item>
+                  <el-descriptions-item label="重量:"
+                    >{{ item.w }}
+                  </el-descriptions-item>
+                  <el-descriptions-item label="数量:"
+                    >{{ item.q }}
+                  </el-descriptions-item>
+                </el-descriptions>
+                <el-divider v-if="index < shopInfo.length - 1"></el-divider>
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column
+            prop="ettaEtorToEbrgAddress"
+            label="客户地址"
+            align="center"
+          ></el-table-column>
+          <el-table-column label="操作" align="center" width="80px">
+            <template slot-scope="{ $index, row }">
+              <el-button
+                @click.native.prevent="deleteTableRow($index, row)"
+                type="text"
+                size="small"
+              >
+                删除
+              </el-button>
+            </template>
+          </el-table-column>
+        </el-table> -->
+          <div class="list-group">
+            <div class="list">
+              驾车路线：
+              <div style="display: flex; align-items: center">
+                <div v-if="drawerData.driveBool" style="margin-right: 20px">
+                  <el-tag size="small"
+                    >里程：{{ drawerData.driveInfo.distance }}
+                  </el-tag>
+                  <el-tag size="small"
+                    >耗时：{{ drawerData.driveInfo.duration }}
+                  </el-tag>
+                </div>
+                <el-switch
+                  @change="saveLineConfig()"
+                  v-model="drawerData.driveBool"
+                >
+                </el-switch>
+              </div>
+            </div>
+            <div class="list">
+              是否显示：
+              <el-switch @change="saveLineConfig()" v-model="drawerData.bool">
+              </el-switch>
+            </div>
+            <div class="list">
+              线条颜色：<el-color-picker
+                @change="saveLineConfig()"
+                v-model="drawerData.strokeColor"
+              ></el-color-picker>
+            </div>
+            <div class="list">
+              线条名称：
+              <el-input
+                style="width: 215px"
+                @change="saveLineConfig()"
+                v-model="drawerData.name"
+                size="small"
+                placeholder="请输入"
+              />
+            </div>
+            <div class="list">
+              线条宽度：
+              <div
+                class="line-width"
+                v-if="drawerData.strokeWeight"
+                :style="{ height: drawerData.strokeWeight + 'px' }"
+              ></div>
+              <el-select
+                v-model="drawerData.strokeWeight"
+                @change="saveLineConfig()"
+                size="small"
+                placeholder="请选择"
+              >
+                <el-option
+                  v-for="item in options"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value"
+                >
+                  <div
+                    class="lineWidth"
+                    :style="{ height: item.value + 'px' }"
+                  ></div>
+                </el-option>
+              </el-select>
+            </div>
+            <div class="list">
+              线条类型：
+              <div
+                class="line-type"
+                v-if="drawerData.strokeStyle"
+                :style="{ borderStyle: drawerData.strokeStyle }"
+              ></div>
+              <el-select
+                v-model="drawerData.strokeStyle"
+                @change="saveLineConfig()"
+                size="small"
+                placeholder="请选择"
+              >
+                <el-option label="实线" value="solid">
+                  <div
+                    style="
+                      width: 100%;
+                      margin-top: 16px;
+                      border: 1px solid #000;
+                    "
+                  ></div>
+                </el-option>
+                <el-option label="虚线" value="dashed">
+                  <div
+                    style="
+                      width: 100%;
+                      margin-top: 16px;
+                      border: 1px dashed #000;
+                    "
+                  ></div>
+                </el-option>
+              </el-select>
+            </div>
+          </div>
+        </div>
+      </template>
+    </el-drawer>
+    <!-- <editPolyLine
+      ref="editPolyLine"
+      @cellMouse="cellMouse"
+      @deletePolyLine="deletePolyLine"
+      @addTask="addTask"
+      @openChooseCar="openChooseCar"
+    /> -->
     <el-drawer
       title="标记点编辑"
       :visible.sync="markerDrawer"
@@ -399,17 +612,20 @@
 </template>
 
 <script>
-import { TRAINNOLIST, MARKERPOINT, CARICON, RESETPATHS } from "../utils/common";
+import {
+  TRAINNOLIST,
+  MARKERPOINT,
+  CARICON,
+  RESETPATHS,
+  RESETGUIDELINE,
+  LINEWIDTHOPTIONS,
+} from "../utils/common";
 import chooseCar from "../components/chooseCar.vue";
 import editPolyLine from "../components/editPolyLine.vue";
+import Sortable from "sortablejs";
 export default {
   name: "HelloWorld",
-  props: {
-    options: {
-      type: Object,
-      default: () => {},
-    },
-  },
+  props: {},
   components: { chooseCar, editPolyLine },
   data() {
     return {
@@ -435,13 +651,15 @@ export default {
       markerDrawer: false,
       guideMarkerList: [], //辅助点
       guideMarkerBool: false,
+      drawer: false,
+      drawerData: {},
+      options: LINEWIDTHOPTIONS,
     };
   },
   methods: {
     // 地图初始化完成
     init({ BMap, map }) {
       this.BMap = BMap;
-      // this.markerPoint = MARKERPOINT;
       this.getTrainMarker();
     },
     // 打开选择车次dialog
@@ -452,24 +670,56 @@ export default {
     // 添加已有车次dialog确认按钮
     emitChooseCar(currentCar) {
       try {
+        this.polylineList[this.tableIndex].etdoNo = currentCar
         this.trainNoList.forEach((item) => {
           if (item.etdoNo == currentCar) {
             const { children } = item;
+            this.activeMarker.forEach((a) => {
+              a.etdoNo = currentCar;
+            });
             item.children = [...children, ...this.activeMarker];
           }
         });
       } catch (err) {}
       console.log(this.trainNoList);
     },
+    // 移除车次
+		removeCar() {
+			const { tableData } = this.polylineList[this.tableIndex]
+			this.removeTask(tableData)
+		},
     // 标记点编辑按钮
     editTask(item) {
       this.markerDrawerData = item;
       this.markerDrawer = true;
     },
+    cellMouse(ettaNo, val) {
+      const { markerPoint } = this;
+      try {
+        markerPoint.forEach((item) => {
+          if (ettaNo == item.ettaNo) {
+            item.isAn = val === "enter";
+            throw new Error();
+          }
+        });
+      } catch (err) {}
+    },
+    // 删除当前运输线 {key = polylineList：删除运输线；guideMarkerList：删除辅助点；guideLineList：删除辅助线}
+    deletePolyLine() {
+      this.polylineList.splice(this.tableIndex, 1);
+      this.$message({
+        message: "删除成功",
+        type: "success",
+      });
+    },
     // 拖拽辅助点结束
-		dragendGuideMarker({ type, target, pixel, point }, item) {
-			item.p = point
-		},
+    dragendGuideMarker({ type, target, pixel, point }, item) {
+      var gc = new BMap.Geocoder();
+      gc.getLocation(point, (res) => {
+        item.p = point;
+        item.ettaEtorToEbrgAddress = res.address;
+      });
+    },
     handleOpen() {},
     handleClose() {},
     // 获取车次显示图标
@@ -711,6 +961,7 @@ export default {
       this.center = p;
       this.zoom = 15;
       var find = markerPoint.find((type) => type.ettaNo == ettaNo);
+      console.log("111111111", find);
       if (find) {
         this.$set(find, "isAn", true);
         setTimeout(() => {
@@ -768,16 +1019,7 @@ export default {
     // 点击marker
     clickMarker(item) {
       if (this.editing) {
-        const {
-          icon,
-          ettaNo,
-          etdoNo,
-          ettaType,
-          ettaId,
-          ettaSoNo,
-          ettaToEbrgAddress,
-          equallyLngLat,
-        } = item;
+        const { icon, ettaNo, etdoNo, ettaType } = item;
         if (etdoNo) {
           this.$message.error("该订单已有车次，不能重复加入");
           return false;
@@ -800,17 +1042,7 @@ export default {
         } else {
           item.icon += "&green";
           path.push(p);
-          tableData.push({
-            p,
-            etdoNo,
-            ettaId,
-            ettaNo,
-            ettaType,
-            ettaSoNo,
-            ettaToEbrgAddress,
-            equallyLngLat,
-            // ettaToContactMobile
-          });
+          tableData.push(item);
         }
       } else {
         this.getGoodsInfo(item.ettaNo);
@@ -824,7 +1056,6 @@ export default {
         if (len > 1) item.icon = item.icon.split("&")[0];
       });
       const { polylineList, pathsConfig } = this;
-      console.log(pathsConfig);
       if (pathsConfig.path.length <= 1) {
         this.$message.error("请至少选择两个点进行连线");
         return false;
@@ -865,11 +1096,9 @@ export default {
         case "mouseover":
           break;
         case "click":
-          // console.log(item)
-          // this.drawerData = item
           this.tableIndex = index;
-          this.$refs["editPolyLine"].handleOpen(item);
-          // this.drawer = true
+          this.drawerData = item;
+          this.drawer = true;
           // this.rowDrop()
           // this.getTotalInfo()
           break;
@@ -916,13 +1145,13 @@ export default {
       if (!this.guideLineBool) return;
       const { guideLineList } = this;
       if (!guideLineList.length) {
-        guideLineList.push(resetGuideLine());
+        guideLineList.push(RESETGUIDELINE());
       }
       const { path } = guideLineList[guideLineList.length - 1];
       path.pop();
       this.saveLineConfig(guideLineList[guideLineList.length - 1], "guideLine");
       if (path.length) {
-        guideLineList.push(resetGuideLine());
+        guideLineList.push(RESETGUIDELINE());
       }
       this.guideLineBool = false;
     },
@@ -945,7 +1174,6 @@ export default {
     handleBaiduMap({ type, target, point, pixel, overlay }) {
       if (this.guideMarkerBool) {
         var gc = new BMap.Geocoder();
-        console.log(gc);
         gc.getLocation(point, (rs) => {
           var addComp = rs.addressComponents;
           var obj = {
@@ -969,7 +1197,7 @@ export default {
         });
       } else if (this.guideLineBool) {
         const { guideLineList } = this;
-        !guideLineList.length && guideLineList.push(resetGuideLine());
+        !guideLineList.length && guideLineList.push(RESETGUIDELINE());
         if (!guideLineList[guideLineList.length - 1].path)
           guideLineList[guideLineList.length - 1].path = [];
         guideLineList[guideLineList.length - 1].path.push(point);
