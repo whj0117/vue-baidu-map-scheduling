@@ -3,7 +3,7 @@
  * @Author: wanghongjian
  * @github: https://github.com/whj0117
  * @Date: 2022-12-07 11:14:55
- * @LastEditTime: 2022-12-25 15:40:21
+ * @LastEditTime: 2022-12-25 16:18:47
  * @LastEditors: wanghongjian
 -->
 <template>
@@ -424,7 +424,7 @@
               驾车路线：
               <div style="display: flex; align-items: center">
                 <div v-if="drawerData.driveBool" style="margin-right: 20px">
-                  <el-tag size="small"
+                  <el-tag size="small" style="margin-right:10px"
                     >里程：{{ drawerData.driveInfo.distance }}
                   </el-tag>
                   <el-tag size="small"
@@ -1551,10 +1551,7 @@ export default {
         try {
           this.markerPoint.forEach((m) => {
             if (item.ettaNo == m.ettaNo) {
-              // item.etdoNo = null;
               m.etdoNo = null;
-              if (!m.isEditIcon && m.icon == "blue") m.icon = "red"; //说明原本是蓝色，没有修改过marker样式
-              // m.icon = 'red'
               throw new Error();
             }
           });
