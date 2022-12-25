@@ -3,7 +3,7 @@
  * @Author: wanghongjian
  * @github: https://github.com/whj0117
  * @Date: 2022-12-07 11:16:11
- * @LastEditTime: 2022-12-25 13:41:33
+ * @LastEditTime: 2022-12-25 15:15:23
  * @LastEditors: wanghongjian
  */
 export const TRAINNOLIST = () => [{
@@ -153,5 +153,6 @@ export const RESETGUIDELINE = () => {
 		editing: false,//是否编辑
 		waypoints: false,
 		driveInfo: {},//距离和时间
+        timeStamp: Date.now(),
 	}
 }
