@@ -3,7 +3,7 @@
  * @Author: wanghongjian
  * @github: https://github.com/whj0117
  * @Date: 2022-12-07 11:16:11
- * @LastEditTime: 2022-12-25 16:11:19
+ * @LastEditTime: 2022-12-28 15:21:29
  * @LastEditors: wanghongjian
  */
 export const TRAINNOLIST = () => [{
@@ -103,7 +103,17 @@ export const MARKERPOINT = () => [{
     ettaFromEbrgAddress: '天津滨海国际机场',//发货地址
     ettaEtorToEbrgAddress: '天津滨海国际机场',//收货地址
     p: { lng: 117.368273, lat: 39.1366 },
-    p: { lng: 117.368273, lat: 39.1366 },
+    s: { lng: 117.368273, lat: 39.1366 },
+    icon:'red',
+    bool:true,
+    isAn:false,
+},{
+    etdoNo: '',
+    ettaNo: 'Y202212073000',
+    ettaFromEbrgAddress: '北京欢乐谷',//发货地址
+    ettaEtorToEbrgAddress: '北京欢乐谷',//收货地址
+    p: { lng: 116.500997, lat: 39.873927 },
+    s: { lng: 116.500997, lat: 39.873927 },
     icon:'red',
     bool:true,
     isAn:false,

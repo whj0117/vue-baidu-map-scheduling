@@ -3,7 +3,7 @@
  * @Author: wanghongjian
  * @github: https://github.com/whj0117
  * @Date: 2022-12-07 11:14:55
- * @LastEditTime: 2022-12-25 16:18:47
+ * @LastEditTime: 2022-12-29 17:28:21
  * @LastEditors: wanghongjian
 -->
 <template>
@@ -424,7 +424,7 @@
               驾车路线：
               <div style="display: flex; align-items: center">
                 <div v-if="drawerData.driveBool" style="margin-right: 20px">
-                  <el-tag size="small" style="margin-right:10px"
+                  <el-tag size="small" style="margin-right: 10px"
                     >里程：{{ drawerData.driveInfo.distance }}
                   </el-tag>
                   <el-tag size="small"
@@ -1264,8 +1264,8 @@ export default {
       markerPoint: MARKERPOINT(),
       markerIcon: CARICON(),
       selectOption: MARKERPOINT(), //选择输入框
-      center: { lng: 116.4, lat: 39.91 },
-      zoom: 10,
+      center: { lng: 116.403963, lat: 39.915119 },
+      zoom: 13,
       address: "",
       editing: false,
       guideMarkerBool: false,
@@ -1301,18 +1301,49 @@ export default {
     // 添加已有车次dialog确认按钮
     emitChooseCar(currentCar) {
       try {
-        this.polylineList[this.tableIndex].etdoNo = currentCar;
+        const { tableIndex, polylineList, activeMarker } = this;
+        activeMarker.forEach((a) => {
+          a.etdoNo = currentCar;
+        });
+        if (polylineList[tableIndex]) {
+          polylineList[tableIndex].etdoNo = currentCar;
+        }
         this.trainNoList.forEach((item) => {
           if (item.etdoNo == currentCar) {
             const { children } = item;
-            this.activeMarker.forEach((a) => {
-              a.etdoNo = currentCar;
-            });
-            item.children = [...children, ...this.activeMarker];
+            item.children = [...children, ...activeMarker];
+            // if (polylineList[tableIndex]) {
+            //   polylineList[tableIndex].path = item.children.map(
+            //     (type) => type.p
+            //   );
+            //   polylineList[tableIndex].tableData = [...item.children];
+            //   polylineList[tableIndex].waypoints = this.getWayPoints(
+            //     polylineList[tableIndex].path
+            //   );
+            // } else {
+            //   let find = polylineList.find((type) => type.etdoNo == currentCar);
+            //   if (find) {
+            //     find.path = item.children.map((type) => type.p);
+            //     find.tableData = [...item.children];
+            //     find.waypoints = this.getWayPoints(find.path);
+            //   } else {
+            //     let resetPaths = {
+            //       ...RESETPATHS(),
+            //       etdoNo: currentCar,
+            //       path: item.children.map((a) => a.p),
+            //       tableData: [...item.children],
+            //       waypoints: this.getWayPoints(item.children.map((a) => a.p)),
+            //     };
+            //     polylineList.push(resetPaths);
+            //   }
+            // }
+            console.log("00000000000", polylineList);
+            throw new Error();
           }
         });
-      } catch (err) {}
-      console.log(this.trainNoList);
+      } catch (err) {
+        console.log(err);
+      }
     },
     // 获取驾车结果
     searchcomplete(evt, item) {

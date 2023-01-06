@@ -3,8 +3,8 @@
  * @Author: wanghongjian
  * @github: https://github.com/whj0117
  * @Date: 2022-12-07 11:14:55
- * @LastEditTime: 2022-12-07 14:45:56
- * @LastEditors:  
+ * @LastEditTime: 2022-12-28 14:30:28
+ * @LastEditors: wanghongjian
  */
 const { defineConfig } = require('@vue/cli-service')
 const path = require("path")
